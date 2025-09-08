@@ -1,15 +1,32 @@
-# Example: EBS CSI Driver IAM Role for Service Account (IRSA)
-module "ebs_csi_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.20.0"
+# EBS CSI driver using Helm
+resource "helm_release" "ebs_csi_driver" {
+  name       = "aws-ebs-csi-driver"
+  repository = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
+  chart      = "aws-ebs-csi-driver"
+  namespace  = "kube-system"
+  version    = "2.19.0"
 
-  role_name = "${var.cluster_name}-ebs-csi"
-  attach_ebs_csi_policy = true
+  set {
+    name  = "controller.serviceAccount.create"
+    value = "false"
+  }
 
-  oidc_providers = {
-    main = {
-      provider_arn               = var.oidc_arn
-      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
-    }
+  set {
+    name  = "controller.serviceAccount.name"
+    value = var.ebs_service_account
+  }
+}
+
+# Cluster autoscaler (optional Helm chart)
+resource "helm_release" "cluster_autoscaler" {
+  name       = "cluster-autoscaler"
+  repository = "https://kubernetes.github.io/autoscaler"
+  chart      = "cluster-autoscaler"
+  namespace  = "kube-system"
+  version    = "9.24.0"
+
+  set {
+    name  = "autoDiscovery.clusterName"
+    value = var.cluster_name
   }
 }

@@ -1,10 +1,17 @@
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
-  version         = "20.0.0"
-
   cluster_name    = var.cluster_name
   cluster_version = var.k8s_version
-  subnet_ids      = var.vpc_subnets
+  subnets         = var.private_subnets
   vpc_id          = var.vpc_id
-  enable_irsa     = var.oidc_provider
+  enable_irsa     = var.enable_oidc_provider
+  manage_aws_auth = true
+
+  tags = {
+    Environment = var.env
+    Project     = "Sisense-EKS"
+  }
 }
+
+output "cluster_name" { value = module.eks.cluster_id }
+output "oidc_provider_arn" { value = module.eks.oidc_provider_arn }

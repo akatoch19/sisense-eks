@@ -1,53 +1,98 @@
-# Part 1 – VPC
+#########################################################
+# Terraform main entry point for Sisense on AWS EKS
+# Integrates:
+# - VPC, Subnets, IGW, Routes
+# - Security Groups
+# - EKS Cluster + OIDC
+# - Node Groups with bootstrap/userdata
+# - FSx Lustre + EBS CSI
+# - Kubernetes Addons (EBS CSI driver, Cluster Autoscaler)
+# - DNS (Route53)
+#########################################################
+
+#########################################################
+# VPC
+#########################################################
 module "vpc" {
-  source = "./modules/vpc"
-  env    = var.env
+  source       = "./modules/vpc"
+  env          = var.env
+  vpc_cidr     = var.vpc_cidr
+  private_subnets = var.private_subnets
+  public_subnets  = var.public_subnets
 }
 
-# Part 2 – Security Groups
-module "security_groups" {
-  source = "./modules/security-groups"
-  vpc_id = module.vpc.vpc_id
+#########################################################
+# Security Groups
+#########################################################
+module "sg" {
+  source              = "./modules/security-groups"
+  vpc_id              = module.vpc.vpc_id
+  fsx_sg_ingress_port = 988
 }
 
-# Part 3 – EKS Cluster
+#########################################################
+# EKS Cluster
+#########################################################
 module "eks" {
-  source         = "./modules/eks"
-  cluster_name   = "${var.env}-eks"
-  k8s_version    = var.k8s_version
-  vpc_subnets    = module.vpc.private_subnets
-  oidc_provider  = true
+  source              = "./modules/eks"
+  cluster_name        = var.cluster_name
+  k8s_version         = var.k8s_version
+  vpc_id              = module.vpc.vpc_id
+  private_subnets     = module.vpc.private_subnets
+  enable_oidc_provider = var.enable_oidc_provider
 }
 
-# Part 4 – Managed Node Groups
+#########################################################
+# Node Groups (Application, Query, Build)
+#########################################################
 module "nodegroups" {
-  source          = "./modules/nodegroups"
-  cluster_name    = module.eks.cluster_name
-  node_iam_role   = module.eks.node_role_arn
-  instance_types  = ["m5.4xlarge"] # customize per Sisense req
-  min_size        = 3
-  max_size        = 6
-  desired_size    = 4
-  extra_userdata  = file("userdata/bootstrap.sh")
+  source         = "./modules/nodegroups"
+  cluster_name   = module.eks.cluster_name
+  node_iam_role  = module.iam.eks_node_role_arn
+  instance_types = var.instance_types
+  disk_size      = var.disk_size
+  min_size       = var.min_size
+  max_size       = var.max_size
+  desired_size   = var.desired_size
+  extra_userdata = var.extra_userdata
+  namespace      = var.namespace
 }
 
-# Part 5 – Storage (FSx + EBS CSI)
+#########################################################
+# Storage (FSx Lustre + EBS CSI IAM Roles)
+#########################################################
 module "storage" {
-  source        = "./modules/storage"
-  cluster_name  = module.eks.cluster_name
-  vpc_subnets   = module.vpc.private_subnets
-  security_group_ids = [module.security_groups.fsx_sg_id]
+  source         = "./modules/storage"
+  fsx_storage_capacity = var.fsx_storage_capacity
+  private_subnets      = module.vpc.private_subnets
+  fsx_sg_id            = module.sg.fsx.id
 }
 
-# Part 6 – Addons (EBS CSI, Autoscaler, etc.)
+#########################################################
+# Kubernetes Addons (EBS CSI driver, Cluster Autoscaler)
+#########################################################
 module "addons" {
-  source       = "./modules/addons"
-  cluster_name = module.eks.cluster_name
-  oidc_arn     = module.eks.oidc_provider_arn
+  source              = "./modules/addons"
+  cluster_name        = module.eks.cluster_name
+  ebs_service_account = "ebs-csi-controller-sa"
+  ebs_role_arn        = module.iam.ebs_csi_role_arn
 }
 
-# Part 7 – DNS / Route53
+#########################################################
+# DNS (Route53)
+#########################################################
 module "dns" {
-  source = "./modules/dns"
-  zone_name = "sisense.example.com"
+  source    = "./modules/dns"
+  zone_name = var.zone_name
+}
+
+#########################################################
+# IAM Roles (Node + EBS CSI)
+#########################################################
+module "iam" {
+  source           = "./modules/iam"
+  env              = var.env
+  cluster_name     = var.cluster_name
+  account_id       = data.aws_caller_identity.current.account_id
+  oidc_provider_arn = module.eks.oidc_provider_arn
 }
