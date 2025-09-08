@@ -59,7 +59,7 @@ Access to Docker Hub (or private registry) for Sisense containers
 
 Deployment Instructions
 1. Initialize Terraform
-terraform init 
+terraform init
 
 
 This configures the remote backend and downloads all required providers.
