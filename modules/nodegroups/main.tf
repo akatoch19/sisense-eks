@@ -1,6 +1,6 @@
 module "eks_node_groups" {
-  source  = "terraform-aws-modules/eks/aws/modules/node_groups"
-  version = "20.0.0"
+  source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
+  #version = "20.0.0"
 
   cluster_name = var.cluster_name
 
