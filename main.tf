@@ -20,8 +20,11 @@ module "irsa" {
 module "addons" {
   source       = "./modules/addons"
   cluster_name = module.eks.cluster_name
+  env          = var.env_name
+  base_domain  = var.base_domain
   irsa_roles   = module.irsa.roles
 }
+
 
 module "fsx" {
   source     = "./modules/fsx"
