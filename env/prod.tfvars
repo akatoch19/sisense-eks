@@ -1,6 +1,11 @@
-aws_region = "us-west-2"
-cluster_name = "sisense-production"
-environment = "production"
-vpc_cidr = "10.0.0.0/16"
-sisense_license_key = "your-license-key"
-sisense_domain = "sisense.yourdomain.com"
+env = "prod"
+aws_region = "us-east-1"
+cluster_name = "sisense-prod-eks"
+k8s_version = "1.31"
+instance_types = ["m5.8xlarge"]
+disk_size = 400
+min_size = 4
+max_size = 8
+desired_size = 4
+fsx_storage_capacity = 6144
+zone_name = "sisense.example.com"

@@ -1,82 +1,53 @@
-data "aws_eks_cluster_auth" "this" {
-  name = module.eks.cluster_name
-}
-
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-data "aws_caller_identity" "current" {}
-
-# VPC Module
+# Part 1 – VPC
 module "vpc" {
   source = "./modules/vpc"
-
-  cluster_name    = var.cluster_name
-  environment     = var.environment
-  vpc_cidr        = var.vpc_cidr
-  aws_region      = var.aws_region
-  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
+  env    = var.env
 }
 
-# EKS Module
+# Part 2 – Security Groups
+module "security_groups" {
+  source = "./modules/security-groups"
+  vpc_id = module.vpc.vpc_id
+}
+
+# Part 3 – EKS Cluster
 module "eks" {
-  source = "./modules/eks"
-
-  cluster_name    = var.cluster_name
-  environment     = var.environment
-  vpc_id          = module.vpc.vpc_id
-  private_subnets = module.vpc.private_subnets
-  public_subnets  = module.vpc.public_subnets
-  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
+  source         = "./modules/eks"
+  cluster_name   = "${var.env}-eks"
+  k8s_version    = var.k8s_version
+  vpc_subnets    = module.vpc.private_subnets
+  oidc_provider  = true
 }
 
-# IAM Module
-module "iam" {
-  source = "./modules/iam"
-
-  cluster_name          = module.eks.cluster_name
-  oidc_provider_arn     = module.eks.oidc_provider_arn
-  oidc_provider_url     = module.eks.oidc_provider_url
-  environment           = var.environment
-  account_id            = data.aws_caller_identity.current.account_id
+# Part 4 – Managed Node Groups
+module "nodegroups" {
+  source          = "./modules/nodegroups"
+  cluster_name    = module.eks.cluster_name
+  node_iam_role   = module.eks.node_role_arn
+  instance_types  = ["m5.4xlarge"] # customize per Sisense req
+  min_size        = 3
+  max_size        = 6
+  desired_size    = 4
+  extra_userdata  = file("userdata/bootstrap.sh")
 }
 
-# Storage Module
+# Part 5 – Storage (FSx + EBS CSI)
 module "storage" {
-  source = "./modules/storage"
-
-  cluster_name          = module.eks.cluster_name
-  vpc_id                = module.vpc.vpc_id
-  private_subnets       = module.vpc.private_subnets
-  node_security_group_id = module.eks.node_security_group_id
-  environment           = var.environment
-  fsx_security_group_id = module.vpc.fsx_security_group_id
+  source        = "./modules/storage"
+  cluster_name  = module.eks.cluster_name
+  vpc_subnets   = module.vpc.private_subnets
+  security_group_ids = [module.security_groups.fsx_sg_id]
 }
 
-# Sisense Module
-module "sisense" {
-  source = "./modules/sisense"
-
-  cluster_name                  = module.eks.cluster_name
-  cluster_endpoint              = module.eks.cluster_endpoint
-  cluster_certificate_authority = module.eks.cluster_certificate_authority_data
-  environment                   = var.environment
-  sisense_license_key           = var.sisense_license_key
-  sisense_domain                = var.sisense_domain
-  namespace                     = var.namespace
-  fsx_filesystem_id             = module.storage.fsx_filesystem_id
-  ebs_csi_driver_role_arn       = module.iam.ebs_csi_driver_role_arn
-  node_iam_instance_profile     = module.eks.node_iam_instance_profile
+# Part 6 – Addons (EBS CSI, Autoscaler, etc.)
+module "addons" {
+  source       = "./modules/addons"
+  cluster_name = module.eks.cluster_name
+  oidc_arn     = module.eks.oidc_provider_arn
 }
 
-# DNS Module
+# Part 7 – DNS / Route53
 module "dns" {
   source = "./modules/dns"
-
-  cluster_name    = var.cluster_name
-  environment     = var.environment
-  sisense_domain  = var.sisense_domain
-  vpc_id          = module.vpc.vpc_id
-  public_subnets  = module.vpc.public_subnets
+  zone_name = "sisense.example.com"
 }

@@ -1,39 +1,28 @@
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-west-2"
-}
+# Environment
+variable "env" { type = string }
+variable "aws_region" { type = string, default = "us-east-1" }
 
-variable "cluster_name" {
-  description = "EKS cluster name"
-  type        = string
-  default     = "sisense-eks"
-}
+# VPC
+variable "vpc_cidr" { type = string, default = "10.0.0.0/16" }
+variable "private_subnets" { type = list(string), default = ["10.0.1.0/24","10.0.2.0/24","10.0.3.0/24"] }
+variable "public_subnets"  { type = list(string), default = ["10.0.101.0/24","10.0.102.0/24","10.0.103.0/24"] }
 
-variable "environment" {
-  description = "Environment (production/staging)"
-  type        = string
-}
+# EKS
+variable "cluster_name" { type = string, default = "sisense-eks" }
+variable "k8s_version" { type = string, default = "1.31" }
+variable "enable_oidc_provider" { type = bool, default = true }
 
-variable "vpc_cidr" {
-  description = "VPC CIDR block"
-  type        = string
-  default     = "10.0.0.0/16"
-}
+# Node Groups
+variable "instance_types" { type = list(string), default = ["m5.4xlarge"] }
+variable "disk_size" { type = number, default = 400 }
+variable "min_size" { type = number, default = 3 }
+variable "max_size" { type = number, default = 6 }
+variable "desired_size" { type = number, default = 4 }
+variable "extra_userdata" { type = string, default = "userdata/bootstrap.sh" }
+variable "namespace" { type = string, default = "sisense" }
 
-variable "sisense_license_key" {
-  description = "Sisense license key"
-  type        = string
-  sensitive   = true
-}
+# FSx
+variable "fsx_storage_capacity" { type = number, default = 1200 }
 
-variable "sisense_domain" {
-  description = "Sisense domain name"
-  type        = string
-}
-
-variable "namespace" {
-  description = "Kubernetes namespace for Sisense"
-  type        = string
-  default     = "sisense"
-}
+# DNS
+variable "zone_name" { type = string, default = "sisense.example.com" }
