@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "my-sisense-terraform-state-prod"
-    key            = "eks/terraform.tfstate"
-    region         = "us-east-1"
+    bucket = "sisense-terraform-state-${var.aws_region}-prod"
+    key    = "sisense/eks/terraform.tfstate"
+    region = var.aws_region
     dynamodb_table = "sisense-terraform-locks-prod"
     encrypt        = true
-  }
+    }
 }

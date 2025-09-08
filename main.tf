@@ -1,46 +1,82 @@
+data "aws_eks_cluster_auth" "this" {
+  name = module.eks.cluster_name
+}
+
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+data "aws_caller_identity" "current" {}
+
+# VPC Module
 module "vpc" {
   source = "./modules/vpc"
-  env    = var.env_name
+
+  cluster_name    = var.cluster_name
+  environment     = var.environment
+  vpc_cidr        = var.vpc_cidr
+  aws_region      = var.aws_region
+  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
 }
 
+# EKS Module
 module "eks" {
-  source       = "./modules/eks"
-  vpc_id       = module.vpc.vpc_id
-  subnet_ids   = module.vpc.private_subnet_ids
-  cluster_name = "${var.env_name}-sisense-eks"
-  eks_version  = var.eks_version
+  source = "./modules/eks"
+
+  cluster_name    = var.cluster_name
+  environment     = var.environment
+  vpc_id          = module.vpc.vpc_id
+  private_subnets = module.vpc.private_subnets
+  public_subnets  = module.vpc.public_subnets
+  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
 }
 
-module "irsa" {
-  source        = "./modules/irsa"
-  cluster_name  = module.eks.cluster_name
-  oidc_provider = module.eks.oidc_provider
+# IAM Module
+module "iam" {
+  source = "./modules/iam"
+
+  cluster_name          = module.eks.cluster_name
+  oidc_provider_arn     = module.eks.oidc_provider_arn
+  oidc_provider_url     = module.eks.oidc_provider_url
+  environment           = var.environment
+  account_id            = data.aws_caller_identity.current.account_id
 }
 
-module "addons" {
-  source       = "./modules/addons"
-  cluster_name = module.eks.cluster_name
-  env          = var.env_name
-  base_domain  = var.base_domain
-  irsa_roles   = module.irsa.roles
+# Storage Module
+module "storage" {
+  source = "./modules/storage"
+
+  cluster_name          = module.eks.cluster_name
+  vpc_id                = module.vpc.vpc_id
+  private_subnets       = module.vpc.private_subnets
+  node_security_group_id = module.eks.node_security_group_id
+  environment           = var.environment
+  fsx_security_group_id = module.vpc.fsx_security_group_id
 }
 
+# Sisense Module
+module "sisense" {
+  source = "./modules/sisense"
 
-module "fsx" {
-  source     = "./modules/fsx"
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnet_ids
-  capacity   = var.fsx_storage_capacity
+  cluster_name                  = module.eks.cluster_name
+  cluster_endpoint              = module.eks.cluster_endpoint
+  cluster_certificate_authority = module.eks.cluster_certificate_authority_data
+  environment                   = var.environment
+  sisense_license_key           = var.sisense_license_key
+  sisense_domain                = var.sisense_domain
+  namespace                     = var.namespace
+  fsx_filesystem_id             = module.storage.fsx_filesystem_id
+  ebs_csi_driver_role_arn       = module.iam.ebs_csi_driver_role_arn
+  node_iam_instance_profile     = module.eks.node_iam_instance_profile
 }
 
+# DNS Module
 module "dns" {
-  source      = "./modules/dns"
-  env         = var.env_name
-  cluster_sg  = module.eks.cluster_sg
-}
+  source = "./modules/dns"
 
-module "jumphost" {
-  source    = "./modules/jumphost"
-  vpc_id    = module.vpc.vpc_id
-  subnet_id = module.vpc.public_subnet_ids[0]
+  cluster_name    = var.cluster_name
+  environment     = var.environment
+  sisense_domain  = var.sisense_domain
+  vpc_id          = module.vpc.vpc_id
+  public_subnets  = module.vpc.public_subnets
 }

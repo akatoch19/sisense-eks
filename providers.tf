@@ -1,11 +1,17 @@
 provider "aws" {
-  region  = var.aws_region
-  profile = var.aws_profile
-  default_tags {
-    tags = {
-      Environment = var.env_name
-      Deployment  = var.deployment_account
-      ManagedBy   = "terraform"
-    }
+  region = var.aws_region
+}
+
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  token                  = data.aws_eks_cluster_auth.this.token
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    token                  = data.aws_eks_cluster_auth.this.token
   }
 }
