@@ -27,3 +27,19 @@ variable "fsx_storage_capacity" {
   type        = number
   default     = 1200 # in GB
 }
+
+variable "cluster_name" {
+  type        = string
+  description = "EKS cluster name"
+}
+
+variable "env" {
+  type        = string
+  description = "Environment name (dev/prod)"
+}
+
+variable "base_domain" {
+  type        = string
+  description = "Base Route53 domain (e.g., example.com)"
+}
+
