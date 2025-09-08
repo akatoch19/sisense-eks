@@ -1,5 +1,4 @@
-variable "vpc_id" {}
-variable "fsx_sg_ingress_port" { default = 988 }
+
 
 # SG for EKS nodes
 resource "aws_security_group" "eks_nodes" {
