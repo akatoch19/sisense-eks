@@ -10,6 +10,16 @@ module "eks" {
   # New way to handle AWS Auth
   authentication_mode                      = "API_AND_CONFIG_MAP"
   enable_cluster_creator_admin_permissions = true
+
+  # -------------------------------
+  # Use existing KMS key & alias to skip creation
+  # -------------------------------
+  kms_key_id = var.kms_key_id # Pass your existing KMS key ARN as a variable
+
+  # -------------------------------
+  # Skip creating CloudWatch log groups (import if exists)
+  # -------------------------------
+  enable_control_plane_logging = false
  
   tags = {
     Environment = var.env
