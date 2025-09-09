@@ -42,3 +42,7 @@ variable "namespace" {
   description = "Namespace for Sisense (used in node labels)"
   type        = string
 }
+
+variable "subnet_ids" {
+  type = list(string)
+}

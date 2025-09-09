@@ -45,7 +45,7 @@ module "eks" {
 }
 
 #########################################################
-# Node Groups (Application, Query, Build)                                                                                                         
+# Node Groups (Application, Query, Build)
 #########################################################
 module "nodegroups" {
   source         = "./modules/nodegroups"
@@ -58,6 +58,7 @@ module "nodegroups" {
   desired_size   = var.desired_size
   extra_userdata = var.extra_userdata
   namespace      = var.namespace
+  subnet_ids     = module.vpc.private_subnets
 }
 
 #########################################################

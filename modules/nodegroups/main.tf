@@ -3,7 +3,7 @@ module "eks" {
  version = "20.0.0"
 
   cluster_name = var.cluster_name
- 
+  subnet_ids   = var.subnet_ids
 
   eks_managed_node_groups = {
     sisense-app = {
