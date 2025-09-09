@@ -59,3 +59,8 @@ variable "fsx_sg_ingress_port" {
   type        = number
   default     = 988
 }
+
+variable "kms_key_id" {
+  type        = string
+  description = "kms key"
+}
