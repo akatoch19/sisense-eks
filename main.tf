@@ -1,22 +1,10 @@
 #########################################################
-# Terraform main entry point for Sisense on AWS EKS
-# Integrates:
-# - VPC, Subnets, IGW, Routes
-# - Security Groups
-# - EKS Cluster + OIDC
-# - Node Groups with bootstrap/userdata
-# - FSx Lustre + EBS CSI
-# - Kubernetes Addons (EBS CSI driver, Cluster Autoscaler)
-# - DNS (Route53)
-#########################################################
-
-#########################################################
 # VPC
 #########################################################
 module "vpc" {
-  source       = "./modules/vpc"
-  env          = var.env
-  vpc_cidr     = var.vpc_cidr
+  source          = "./modules/vpc"
+  env             = var.env
+  vpc_cidr        = var.vpc_cidr
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
 }
@@ -32,16 +20,31 @@ module "sg" {
 }
 
 #########################################################
+# IAM Roles (Node + EBS CSI)
+#########################################################
+module "iam" {
+  source                = "./modules/iam"
+  env                   = var.env
+  cluster_name          = var.cluster_name
+  oidc_provider_arn     = module.eks.oidc_provider_arn
+  use_custom_cni_policy = true
+  eks_cni_govcloud_arn  = "" # leave blank to use custom CNI
+}
+
+#########################################################
 # EKS Cluster
 #########################################################
 module "eks" {
-  source              = "./modules/eks"
-  cluster_name        = var.cluster_name
-  k8s_version         = var.k8s_version
-  vpc_id              = module.vpc.vpc_id
-  private_subnets     = module.vpc.private_subnets
+  source               = "./modules/eks"
+  cluster_name         = var.cluster_name
+  k8s_version          = var.k8s_version
+  vpc_id               = module.vpc.vpc_id
+  private_subnets      = module.vpc.private_subnets
   enable_oidc_provider = var.enable_oidc_provider
-  env =var.env
+  node_role_arn        = module.iam.eks_node_role_arn
+  env                  = var.env
+
+  depends_on = [module.iam]
 }
 
 #########################################################
@@ -59,18 +62,23 @@ module "nodegroups" {
   extra_userdata = var.extra_userdata
   namespace      = var.namespace
   subnet_ids     = module.vpc.private_subnets
+
+  depends_on = [module.eks]
 }
 
 #########################################################
 # Storage (FSx Lustre + EBS CSI IAM Roles)
 #########################################################
-data "aws_caller_identity" "current" {}
 module "storage" {
-  source         = "./modules/storage"
+  source               = "./modules/storage"
   fsx_storage_capacity = var.fsx_storage_capacity
   private_subnets      = module.vpc.private_subnets
-  fsx_sg_id            = module.sg.fsx_sg_id
+  vpc_id               = module.vpc.vpc_id
+  vpc_cidr_block       = var.vpc_cidr
   env                  = var.env
+  tags                 = { Environment = var.env }
+
+  depends_on = [module.sg]
 }
 
 #########################################################
@@ -81,6 +89,8 @@ module "addons" {
   cluster_name        = module.eks.cluster_name
   ebs_service_account = "ebs-csi-controller-sa"
   ebs_role_arn        = module.iam.ebs_csi_role_arn
+
+  depends_on = [module.iam]
 }
 
 #########################################################
@@ -90,15 +100,4 @@ module "dns" {
   source    = "./modules/dns"
   zone_name = var.zone_name
   env       = var.env
-}
-
-#########################################################
-# IAM Roles (Node + EBS CSI)
-#########################################################
-module "iam" {
-  source           = "./modules/iam"
-  env              = var.env
-  cluster_name     = var.cluster_name
-  account_id       = data.aws_caller_identity.current.account_id
-  oidc_provider_arn = module.eks.oidc_provider_arn
 }
