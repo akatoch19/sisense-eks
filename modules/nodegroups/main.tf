@@ -2,7 +2,7 @@ module "eks" {
  source  = "terraform-aws-modules/eks/aws"
  version = "20.0.0"
 
-  cluster_name = module.eks_cluster.cluster_id
+  cluster_name = module.eks.cluster_id
   subnet_ids   = var.subnet_ids
 
   eks_managed_node_groups = {
