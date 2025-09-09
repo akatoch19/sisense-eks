@@ -28,6 +28,7 @@ module "sg" {
   source              = "./modules/security-groups"
   vpc_id              = module.vpc.vpc_id
   fsx_sg_ingress_port = 988
+  env                 = var.env
 }
 
 #########################################################
@@ -40,10 +41,11 @@ module "eks" {
   vpc_id              = module.vpc.vpc_id
   private_subnets     = module.vpc.private_subnets
   enable_oidc_provider = var.enable_oidc_provider
+  env =var.env
 }
 
 #########################################################
-# Node Groups (Application, Query, Build)
+# Node Groups (Application, Query, Build)                                                                                                         
 #########################################################
 module "nodegroups" {
   source         = "./modules/nodegroups"
@@ -61,11 +63,13 @@ module "nodegroups" {
 #########################################################
 # Storage (FSx Lustre + EBS CSI IAM Roles)
 #########################################################
+data "aws_caller_identity" "current" {}
 module "storage" {
   source         = "./modules/storage"
   fsx_storage_capacity = var.fsx_storage_capacity
   private_subnets      = module.vpc.private_subnets
-  fsx_sg_id            = module.sg.fsx.id
+  fsx_sg_id            = module.sg.fsx_sg_id
+  env                  = var.env
 }
 
 #########################################################
@@ -84,6 +88,7 @@ module "addons" {
 module "dns" {
   source    = "./modules/dns"
   zone_name = var.zone_name
+  env       = var.env
 }
 
 #########################################################

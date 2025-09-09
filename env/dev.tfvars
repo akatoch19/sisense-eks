@@ -1,6 +1,6 @@
 # Environment
 env = "dev"
-aws_region = "us-east-1"
+aws_region = "us-gov-west-1"
 cluster_name = "sisense-dev-eks"
 k8s_version = "1.31"
 
@@ -19,4 +19,4 @@ zone_name = "dev.sisense.example.com"
 namespace = "sisense"
 
 # Userdata bootstrap
-extra_userdata = "userdata/bootstrap.sh"
+extra_userdata = "userdata/bootstrap.sh

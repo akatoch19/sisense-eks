@@ -1,5 +1,4 @@
 
-
 # SG for EKS nodes
 resource "aws_security_group" "eks_nodes" {
   name   = "${var.env}-eks-nodes-sg"
@@ -46,4 +45,8 @@ resource "aws_security_group" "fsx" {
   }
 
   tags = { Name = "${var.env}-fsx-sg" }
+}
+output "fsx_sg_id" {
+  description = "ID of the FSx security group"
+  value       = aws_security_group.fsx.id
 }

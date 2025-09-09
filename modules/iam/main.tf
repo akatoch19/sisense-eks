@@ -1,12 +1,6 @@
 #########################################################
 # IAM module for EKS nodes and EBS CSI driver
 #########################################################
-
-variable "env" {}
-variable "cluster_name" {}
-variable "oidc_provider_arn" {}
-variable "account_id" {}
-
 ############################
 # Node IAM Role
 ############################

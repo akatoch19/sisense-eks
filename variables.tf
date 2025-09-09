@@ -5,7 +5,7 @@ variable "env" {
 
 variable "aws_region" {
   type    = string
-  default = "us-east-1"
+  default = "us-gov-west-1"
 }
 
 # VPC
@@ -87,3 +87,4 @@ variable "zone_name" {
   type    = string
   default = "sisense.example.com"
 }
+

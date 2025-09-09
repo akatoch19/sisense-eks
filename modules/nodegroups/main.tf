@@ -1,10 +1,11 @@
-module "eks_node_groups" {
-  source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
-  version = "20.0.0"
+module "eks" {
+ source  = "terraform-aws-modules/eks/aws"
+ version = "20.0.0"
 
   cluster_name = var.cluster_name
+ 
 
-  node_groups = {
+  eks_managed_node_groups = {
     sisense-app = {
       desired_capacity    = var.desired_size
       min_capacity        = var.min_size

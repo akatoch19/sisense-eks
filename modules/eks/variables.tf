@@ -19,4 +19,10 @@ variable "vpc_id" {
 }
 
 variable "enable_oidc_provider" {
-  description = "Enable OIDC provider for IA
+    description = "Enable OIDC provider for IA"
+}
+ 
+ variable "env" {
+  type        = string
+  description = "Environment name (e.g., dev, staging, prod)"
+}

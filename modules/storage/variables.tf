@@ -13,3 +13,8 @@ variable "fsx_sg_id" {
   description = "Security Group ID for FSx"
   type        = string
 }
+
+variable "env" {
+  description = "Environment name (e.g., dev, prod)"
+  type        = string
+}
