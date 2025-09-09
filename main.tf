@@ -39,7 +39,7 @@ module "eks" {
   cluster_name        = var.cluster_name
   k8s_version         = var.k8s_version
   vpc_id              = module.vpc.vpc_id
-  private_subnets     = module.vpc.private_subnets
+  private_subnets = module.vpc.private_subnet_ids
   enable_oidc_provider = var.enable_oidc_provider
   env =var.env
 }
@@ -58,7 +58,7 @@ module "nodegroups" {
   desired_size   = var.desired_size
   extra_userdata = var.extra_userdata
   namespace      = var.namespace
-  subnet_ids     = module.vpc.private_subnets
+  subnet_ids = module.vpc.private_subnet_ids
 }
 
 #########################################################
@@ -67,9 +67,10 @@ module "nodegroups" {
 module "storage" {
   source         = "./modules/storage"
   fsx_storage_capacity = var.fsx_storage_capacity
-  private_subnets      = module.vpc.private_subnets
+  private_subnets = module.vpc.private_subnet_ids
   fsx_sg_id            = module.sg.fsx_sg_id
   env                  = var.env
+
 }
 # Kubernetes Addons (EBS CSI driver, Cluster Autoscaler)
 #########################################################
@@ -78,6 +79,10 @@ module "addons" {
   cluster_name        = module.eks.cluster_name
   ebs_service_account = "ebs-csi-controller-sa"
   ebs_role_arn        = module.iam.ebs_csi_role_arn
+   providers = {
+    kubernetes = kubernetes.eks
+    helm       = helm.eks
+  }
   depends_on          = [module.eks, module.nodegroups]
 }
 

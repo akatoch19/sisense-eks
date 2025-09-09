@@ -16,3 +16,15 @@ variable "private_subnets" {
 variable "env" {
   type = string
 }
+variable "enable_nat_gateway" {
+  description = "Create one NAT Gateway in a public subnet for all private subnets"
+  type        = bool
+  default     = true
+}
+ 
+variable "nat_gateway_subnet_index" {
+  description = "Index of the PUBLIC subnet to host the NAT Gateway (0-based)"
+  type        = number
+  default     = 0
+}
+
