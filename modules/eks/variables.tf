@@ -26,3 +26,8 @@ variable "enable_oidc_provider" {
   type        = string
   description = "Environment name (e.g., dev, staging, prod)"
 }
+
+variable "kms_key_id" {
+  type        = string
+  description = "kms key"
+}
