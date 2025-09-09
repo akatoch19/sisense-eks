@@ -7,9 +7,9 @@ k8s_version = "1.32"
 # Nodegroup sizing
 instance_types = ["m5.2xlarge"]
 disk_size      = 200
-min_size       = 2
+min_size       = 1
 max_size       = 3
-desired_size   = 2
+desired_size   = 1
 
 # FSx Lustre storage
 fsx_storage_capacity = 1200

@@ -1,66 +1,95 @@
-#########################################################
-# Root variables.tf
-#########################################################
-
+# Environment
 variable "env" {
-  description = "Environment name (dev/prod/etc.)"
-  type        = string
+  type = string
 }
 
-variable "cluster_name" {
-  description = "EKS Cluster name"
-  type        = string
+variable "aws_region" {
+  type    = string
+  default = "us-gov-west-1"
 }
 
-variable "tags" {
-  description = "Map of tags to apply to all resources"
-  type        = map(string)
-  default     = {}
-}
-
-variable "vpc_id" {
-  description = "VPC ID for FSx Lustre"
-  type        = string
-}
-
-variable "vpc_cidr_block" {
-  description = "VPC CIDR block for FSx SG rules"
-  type        = string
+# VPC
+variable "vpc_cidr" {
+  type    = string
+  default = "10.0.0.0/16"
 }
 
 variable "private_subnets" {
-  description = "List of private subnet IDs for FSx Lustre"
-  type        = list(string)
+  type    = list(string)
+  default = ["10.0.1.0/24","10.0.2.0/24","10.0.3.0/24"]
 }
 
+variable "public_subnets" {
+  type    = list(string)
+  default = ["10.0.101.0/24","10.0.102.0/24","10.0.103.0/24"]
+}
+
+# EKS
+variable "cluster_name" {
+  type    = string
+  default = "sisense-eks"
+}
+
+variable "k8s_version" {
+  type    = string
+  default = "1.32"
+}
+
+variable "enable_oidc_provider" {
+  type    = bool
+  default = true
+}
+
+# Node Groups
+variable "instance_types" {
+  type    = list(string)
+  default = ["m5.4xlarge"]
+}
+
+variable "disk_size" {
+  type    = number
+  default = 400
+}
+
+variable "min_size" {
+  type    = number
+  default = 3
+}
+
+variable "max_size" {
+  type    = number
+  default = 6
+}
+
+variable "desired_size" {
+  type    = number
+  default = 4
+}
+
+variable "extra_userdata" {
+  type    = string
+  default = "userdata/bootstrap.sh"
+}
+
+variable "namespace" {
+  type    = string
+  default = "sisense"
+}
+
+# FSx
 variable "fsx_storage_capacity" {
-  description = "FSx Lustre storage capacity in GB"
-  type        = number
+  type    = number
+  default = 1200
 }
 
-variable "use_custom_cni_policy" {
-  description = "Create a custom EKS CNI policy for GovCloud"
-  type        = bool
-  default     = false
-}
+# DNS
+#variable "zone_name" {
+ # type    = string
+  #default = "sisense.myleslie.com"
+#}
 
-variable "eks_cni_govcloud_arn" {
-  description = "GovCloud EKS CNI managed policy ARN (if available)"
-  type        = string
-  default     = ""
-}
-
-variable "oidc_provider_arn" {
-  description = "OIDC provider ARN for EBS CSI role"
-  type        = string
-}
 variable "fsx_sg_ingress_port" {
   description = "Port for FSx Lustre inbound traffic (default 988)"
   type        = number
   default     = 988
-}
-
-variable "kms_key_id" {
-  type        = string
-  description = "kms key"
 }

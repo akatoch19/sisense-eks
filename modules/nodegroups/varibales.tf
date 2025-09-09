@@ -1,48 +1,72 @@
-variable "cluster_name" {
-  description = "EKS cluster name to attach the node groups"
-  type        = string
+# Security group for EKS worker nodes
+resource "aws_security_group" "eks_nodes" {
+  name        = "${var.env}-eks-nodes-sg"
+  vpc_id      = var.vpc_id
+  description = "Security group for EKS worker nodes"
+ 
+  ingress {
+    description = "All traffic from other nodes"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+ 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+ 
+  tags = {
+    Name = "${var.env}-eks-nodes-sg"
+  }
 }
-
-variable "desired_size" {
-  description = "Desired number of worker nodes in node groups"
-  type        = number
+ 
+# Security group for FSx Lustre
+resource "aws_security_group" "fsx" {
+  name        = "${var.env}-fsx-sg"
+  vpc_id      = var.vpc_id
+  description = "Security group for FSx Lustre"
+ 
+  # Allow Lustre LNET (tcp/988) from EKS worker nodes
+  ingress {
+    description     = "Lustre LNET from EKS nodes"
+    from_port       = 988
+    to_port         = 988
+    protocol        = "tcp"
+    security_groups = [aws_security_group.eks_nodes.id]
+  }
+ 
+  # Allow Lustre LNET (tcp/988) from itself (FSx ↔ FSx comms)
+  ingress {
+    description = "Lustre LNET self"
+    from_port   = 988
+    to_port     = 988
+    protocol    = "tcp"
+    self        = true
+  }
+ 
+  # All outbound allowed
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+ 
+  tags = {
+    Name = "${var.env}-fsx-sg"
+  }
 }
-
-variable "min_size" {
-  description = "Minimum number of worker nodes in node groups"
-  type        = number
+ 
+# Outputs
+output "eks_nodes_sg_id" {
+  description = "ID of the EKS worker nodes security group"
+  value       = aws_security_group.eks_nodes.id
 }
-
-variable "max_size" {
-  description = "Maximum number of worker nodes in node groups"
-  type        = number
-}
-
-variable "instance_types" {
-  description = "List of EC2 instance types for worker nodes"
-  type        = list(string)
-}
-
-variable "disk_size" {
-  description = "EBS volume size (in GiB) for each worker node"
-  type        = number
-}
-
-variable "node_iam_role" {
-  description = "IAM role ARN to associate with EKS node groups"
-  type        = string
-}
-
-variable "extra_userdata" {
-  description = "Path to the user data bootstrap script template"
-  type        = string
-}
-
-variable "namespace" {
-  description = "Namespace for Sisense (used in node labels)"
-  type        = string
-}
-
-variable "subnet_ids" {
-  type = list(string)
-}
+ 
+output "fsx_sg_id" {
+  description = "ID of the FSx Lustre security group"
+  value       = aws_security_group.fsx.id

@@ -27,7 +27,3 @@ variable "enable_oidc_provider" {
   description = "Environment name (e.g., dev, staging, prod)"
 }
 
-variable "kms_key_id" {
-  type        = string
-  description = "kms key"
-}

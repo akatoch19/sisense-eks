@@ -35,7 +35,6 @@ locals {
 module "nodegroups" {
   source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
   version = "20.0.0"
-
   for_each = local.node_groups
 
   cluster_name   = var.cluster_name
@@ -47,6 +46,5 @@ module "nodegroups" {
   max_size       = each.value.max_size
   instance_types = each.value.instance_types
   disk_size      = each.value.disk_size
-  node_role_arn  = each.value.node_role_arn
   labels         = each.value.labels
 }
