@@ -43,6 +43,7 @@ module "eks" {
   enable_oidc_provider = var.enable_oidc_provider
   node_role_arn        = module.iam.eks_node_role_arn
   env                  = var.env
+  kms_key_id           = var.kms_key_id
 
   depends_on = [module.iam]
 }
