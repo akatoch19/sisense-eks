@@ -96,8 +96,9 @@ module "addons" {
 #########################################################
 # DNS (Route53)
 #########################################################
-module "dns" {
-  source    = "./modules/dns"
-  zone_name = var.zone_name
-  env       = var.env
-}
+#module "dns" {
+#  source    = "./modules/dns"
+#  zone_name = var.zone_name
+#  env       = var.env
+#}
+

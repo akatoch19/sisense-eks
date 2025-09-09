@@ -54,3 +54,8 @@ variable "oidc_provider_arn" {
   description = "OIDC provider ARN for EBS CSI role"
   type        = string
 }
+variable "fsx_sg_ingress_port" {
+  description = "Port for FSx Lustre inbound traffic (default 988)"
+  type        = number
+  default     = 988
+}
