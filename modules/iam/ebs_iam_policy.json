@@ -22,7 +22,7 @@
       "Action": [
         "ec2:CreateTags"
       ],
-      "Resource": "arn:aws:ec2:*:*:volume/*",
+      "Resource": "arn:aws-us-gov:ec2:*:*:volume/*",
       "Condition": {
         "StringEquals": {
           "aws:RequestTag/kubernetes.io/cluster/${cluster_name}": "owned"
