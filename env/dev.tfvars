@@ -20,3 +20,7 @@ namespace = "sisense"
 
 # Userdata bootstrap
 extra_userdata = "userdata/bootstrap.sh
+
+# IAM / CNI
+use_custom_cni_policy = true
+eks_cni_govcloud_arn  = ""  # leave blank to use custom CNI
