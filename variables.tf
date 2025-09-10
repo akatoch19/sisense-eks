@@ -23,7 +23,18 @@ variable "public_subnets" {
   type    = list(string)
   default = ["10.0.101.0/24","10.0.102.0/24","10.0.103.0/24"]
 }
-
+# NAT controls (separate, as requested)
+variable "enable_nat_gateway" {
+  description = "Create one NAT Gateway in a public subnet for all private subnets"
+  type        = bool
+  default     = true
+}
+ 
+variable "nat_gateway_subnet_index" {
+  description = "Index of the PUBLIC subnet to host the NAT GW (0-based)"
+  type        = number
+  default     = 0
+}
 # EKS
 variable "cluster_name" {
   type    = string
@@ -53,17 +64,17 @@ variable "disk_size" {
 
 variable "min_size" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "max_size" {
   type    = number
-  default = 6
+  default = 1
 }
 
 variable "desired_size" {
   type    = number
-  default = 4
+  default = 1
 }
 
 variable "extra_userdata" {
@@ -93,3 +104,8 @@ variable "fsx_sg_ingress_port" {
   type        = number
   default     = 988
 }
+
+
+
+
+

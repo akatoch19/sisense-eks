@@ -8,7 +8,7 @@ k8s_version = "1.32"
 instance_types = ["m5.2xlarge"]
 disk_size      = 200
 min_size       = 1
-max_size       = 3
+max_size       = 1
 desired_size   = 1
 
 # FSx Lustre storage
@@ -20,7 +20,3 @@ fsx_storage_capacity = 1200
 
 # Userdata bootstrap
 extra_userdata = "userdata/bootstrap.sh
-
-# IAM / CNI
-use_custom_cni_policy = true
-eks_cni_govcloud_arn  = ""  # leave blank to use custom CNI
