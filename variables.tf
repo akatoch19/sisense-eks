@@ -43,7 +43,7 @@ variable "cluster_name" {
 
 variable "k8s_version" {
   type    = string
-  default = "1.32"
+  default = "1.33"
 }
 
 variable "enable_oidc_provider" {
@@ -105,9 +105,8 @@ variable "fsx_sg_ingress_port" {
   default     = 988
 }
 
-variable "bastion_ami_id" {
-  description = "AMI ID for the bastion EC2"
-}
+
+
 
 variable "private_subnet_id" {
   description = "Public subnet ID for bastion host"
@@ -116,9 +115,3 @@ variable "private_subnet_id" {
 variable "key_name" {
   description = "SSH key name for bastion EC2"
 }
-
-
-
-
-
-

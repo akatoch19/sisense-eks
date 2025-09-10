@@ -2,7 +2,9 @@
 env = "dev"
 aws_region = "us-gov-west-1"
 cluster_name = "sisense-dev-eks"
-k8s_version = "1.32"
+k8s_version = "1.33"
+
+instance_type = "t3.micro"
 
 # Nodegroup sizing
 instance_types = ["m5.2xlarge"]
@@ -10,6 +12,7 @@ disk_size      = 200
 min_size       = 1
 max_size       = 1
 desired_size   = 1
+
 
 # FSx Lustre storage
 fsx_storage_capacity = 1200
