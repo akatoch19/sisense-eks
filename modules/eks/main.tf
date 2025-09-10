@@ -16,10 +16,10 @@ module "eks" {
   # -------------------------------
   # Optional KMS key for secrets encryption
   # -------------------------------
-  cluster_encryption_config = var.kms_key_id == null ? null : {
-    resources        = ["secrets"]
-    provider_key_arn = var.kms_key_id
-  }
+  cluster_encryption_config = var.kms_key_id == null ? [] : [{
+  resources        = ["secrets"]
+  provider_key_arn = var.kms_key_id
+  }]
 
   # -------------------------------
   # Control plane logging

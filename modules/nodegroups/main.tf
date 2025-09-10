@@ -45,29 +45,27 @@ terraform {
   }
 }
 
-
-
 module "nodegroups" {
   source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
   version = "20.0.0"
+
+  for_each = local.node_groups
 
   providers = {
     kubernetes = kubernetes
     helm       = helm
   }
 
-  for_each = local.node_groups
-
   cluster_name = var.cluster_name
   subnet_ids   = var.subnet_ids
 
-  name            = each.key
-  desired_size    = each.value.desired_size
-  min_size        = each.value.min_size
-  max_size        = each.value.max_size
-  instance_types  = each.value.instance_types
-  disk_size       = each.value.disk_size
-  iam_role_arn    = each.value.node_role_arn
-  labels          = each.value.labels
+  name           = each.key
+  desired_size   = each.value.desired_size
+  min_size       = each.value.min_size
+  max_size       = each.value.max_size
+  instance_types = each.value.instance_types
+  disk_size      = each.value.disk_size
+  iam_role_arn   = each.value.node_role_arn
+  labels         = each.value.labels
   pre_bootstrap_user_data = var.extra_userdata
 }
