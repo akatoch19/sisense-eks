@@ -32,13 +32,28 @@ locals {
   }
 }
 
+terraform {
+  required_providers {
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.0"
+    }
+  }
+}
+
+
+
 module "nodegroups" {
   source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
   version = "20.0.0"
 
   providers = {
-    kubernetes = kubernetes.eks
-    helm       = helm.eks
+    kubernetes = kubernetes
+    helm       = helm
   }
 
   for_each = local.node_groups
