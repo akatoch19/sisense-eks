@@ -35,11 +35,19 @@ module "sg" {
 # EKS Cluster
 #########################################################
 module "eks" {
+<<<<<<< HEAD
+  source              = "./modules/eks"
+  cluster_name        = var.cluster_name
+  k8s_version         = var.k8s_version
+  vpc_id              = module.vpc.vpc_id
+  private_subnets     = module.vpc.private_subnets
+=======
   source              = "./modules/eks"
   cluster_name        = var.cluster_name
   k8s_version         = var.k8s_version
   vpc_id              = module.vpc.vpc_id
   private_subnets = module.vpc.private_subnet_ids
+>>>>>>> 28f018a6abee44e21ab34cfe7ba30ed4fe15f9cf
   enable_oidc_provider = var.enable_oidc_provider
   env =var.env
 }
@@ -58,7 +66,11 @@ module "nodegroups" {
   desired_size   = var.desired_size
   extra_userdata = var.extra_userdata
   namespace      = var.namespace
+<<<<<<< HEAD
+  subnet_ids     = module.vpc.private_subnets
+=======
   subnet_ids = module.vpc.private_subnet_ids
+>>>>>>> 28f018a6abee44e21ab34cfe7ba30ed4fe15f9cf
 }
 
 #########################################################
@@ -67,10 +79,18 @@ module "nodegroups" {
 module "storage" {
   source         = "./modules/storage"
   fsx_storage_capacity = var.fsx_storage_capacity
+<<<<<<< HEAD
+  private_subnets      = module.vpc.private_subnets
+  fsx_sg_id            = module.sg.fsx_sg_id
+=======
   private_subnets = module.vpc.private_subnet_ids
   fsx_sg_id            = module.sg.fsx_sg_id
+>>>>>>> 28f018a6abee44e21ab34cfe7ba30ed4fe15f9cf
   env                  = var.env
+<<<<<<< HEAD
+=======
 
+>>>>>>> 28f018a6abee44e21ab34cfe7ba30ed4fe15f9cf
 }
 # Kubernetes Addons (EBS CSI driver, Cluster Autoscaler)
 #########################################################
@@ -79,11 +99,15 @@ module "addons" {
   cluster_name        = module.eks.cluster_name
   ebs_service_account = "ebs-csi-controller-sa"
   ebs_role_arn        = module.iam.ebs_csi_role_arn
+<<<<<<< HEAD
+  depends_on          = [module.eks, module.nodegroups]
+=======
    providers = {
     kubernetes = kubernetes.eks
     helm       = helm.eks
   }
   depends_on          = [module.eks, module.nodegroups]
+>>>>>>> 28f018a6abee44e21ab34cfe7ba30ed4fe15f9cf
 }
 
 #########################################################
