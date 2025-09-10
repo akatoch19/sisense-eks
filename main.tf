@@ -108,3 +108,18 @@ module "iam" {
   account_id       = data.aws_caller_identity.current.account_id
   oidc_provider_arn = module.eks.oidc_provider_arn
 }
+
+#########################################################
+# Bastion
+#########################################################
+
+module "bastion" {
+  source        = "./modules/bastion"
+  env           = var.env
+  vpc_id        = var.vpc_id
+  subnet_id     = var.public_subnet_id   # Use public subnet
+  ami_id        = var.bastion_ami_id     # Amazon Linux 2 AMI
+  instance_type = "t3.medium"
+  key_name      = var.key_name
+  my_ip         = var.my_ip
+}
