@@ -3,13 +3,7 @@ resource "aws_security_group" "bastion_sg" {
   description = "Security group for EKS bastion host"
   vpc_id      = var.vpc_id
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.my_ip] # Your IP
-  }
-
+  # Allow all outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
@@ -37,9 +31,15 @@ resource "aws_iam_role" "bastion_role" {
   })
 }
 
+# Attach necessary policies for EKS and SSM
 resource "aws_iam_role_policy_attachment" "bastion_eks_access" {
   role       = aws_iam_role.bastion_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "bastion_ssm_access" {
+  role       = aws_iam_role.bastion_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_instance_profile" "bastion_instance_profile" {
@@ -51,10 +51,12 @@ resource "aws_instance" "bastion" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
   subnet_id                   = var.subnet_id
-  key_name                    = var.key_name
-  associate_public_ip_address = true
+  key_name                    = var.key_name          # optional for SSM
   security_groups             = [aws_security_group.bastion_sg.id]
   iam_instance_profile        = aws_iam_instance_profile.bastion_instance_profile.name
+
+  # No public IP needed
+  associate_public_ip_address = false
 
   user_data = <<-EOF
               #!/bin/bash
