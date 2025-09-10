@@ -105,6 +105,21 @@ variable "fsx_sg_ingress_port" {
   default     = 988
 }
 
+variable "bastion_ami_id" {
+  description = "AMI ID for the bastion EC2"
+}
+
+variable "public_subnet_id" {
+  description = "Public subnet ID for bastion host"
+}
+
+variable "key_name" {
+  description = "SSH key name for bastion EC2"
+}
+
+variable "my_ip" {
+  description = "Your public IP address in CIDR format, e.g., 203.0.113.25/32"
+}
 
 
 
