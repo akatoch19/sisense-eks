@@ -37,7 +37,36 @@ resource "aws_security_group" "jumphost_sg" {
     Name = "${var.env}-jumphost-sg"
   }
 }
+
+resource "aws_security_group_rule" "eks_api_from_jumphost" {
+  description              = "Jumphost"
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = var.cluster_sg_id
+  source_security_group_id = aws_security_group.jumphost_sg.id
+}
  
+
+
+ # Instance Profile for EC2
+resource "aws_iam_instance_profile" "jumphost" {
+  name = "${var.env}-eks-jumphost-instance-profile"
+  role = aws_iam_role.jumphost_role.name
+}
+ 
+# Attach the custom policy (and EKS DescribeCluster)
+resource "aws_iam_role_policy_attachment" "jumphost__attach" {
+  role       = aws_iam_role.jumphost_role.name
+  policy_arn = aws_iam_policy.jumphost_custom.arn
+}
+ 
+# Attach minimal EKS permissions (needed for kubeconfig/token)
+resource "aws_iam_role_policy_attachment" "jumphost_eks_describe_attach" {
+  role       = aws_iam_role.jumphost_role.name
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/AmazonEKSClusterPolicy"
+}
 ############################
 # IAM Role + Instance Profile
 ############################
@@ -65,6 +94,8 @@ resource "aws_iam_policy" "jumphost_custom" {
       "Sid": "VisualEditor0",
       "Effect": "Allow",
       "Action": [
+        "eks:ListClusters",
+        "eks:DescribeCluste",
         "ssm:ListInstanceAssociations",
         "ssm:GetParameter",
         "ssm:UpdateAssociationStatus",
@@ -135,8 +166,10 @@ resource "aws_iam_role_policy_attachment" "jumphost_ssm_access" {
 resource "aws_iam_instance_profile" "jumphost_instance_profile" {
   name = "${var.env}-jumphost-profile"
   role = aws_iam_role.jumphost_role.name
+
 }
- 
+
+
 ############################
 # EC2 Jumphost in private subnet
 ############################
@@ -149,10 +182,10 @@ resource "aws_instance" "jumphost" {
   instance_type          = var.instance_type
   subnet_id              = element(var.private_subnet_ids, 0)
   associate_public_ip_address = false
- 
+ iam_instance_profile = var.iam_instance_profile_name != null && var.iam_instance_profile_name != "" ? var.iam_instance_profile_name : aws_iam_instance_profile.jumphost_instance_profile.name
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.jumphost_sg.id]
-  iam_instance_profile   = aws_iam_instance_profile.jumphost_instance_profile.name
+
  
   user_data = <<-EOF
               #!/bin/bash
@@ -174,4 +207,8 @@ resource "aws_instance" "jumphost" {
 }
 output "security_group_id" {
   value = aws_security_group.jumphost_sg.id
+}
+
+output "role_arn" {
+  value = aws_iam_role.jumphost_role.arn
 }

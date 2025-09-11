@@ -26,3 +26,7 @@ variable "enable_oidc_provider" {
   type        = string
   description = "Environment name (e.g., dev, staging, prod)"
 }
+
+variable "jumphost_role_arn" {
+  type = string
+}

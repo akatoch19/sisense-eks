@@ -111,7 +111,3 @@ variable "fsx_sg_ingress_port" {
 variable "private_subnet_id" {
   description = "Public subnet ID for bastion host"
 }
-
-variable "key_name" {
-  description = "SSH key name for bastion EC2"
-}

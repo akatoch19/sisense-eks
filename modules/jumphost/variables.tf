@@ -48,3 +48,9 @@ variable "subnet_id" {
 variable "private_subnet_ids" {
   type = list(string)
 }
+variable "cluster_sg_id" {
+  description = "The ID of the EKS cluster security group"
+  type        = string
+}
+
+

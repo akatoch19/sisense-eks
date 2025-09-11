@@ -13,6 +13,7 @@ min_size       = 1
 max_size       = 1
 desired_size   = 1
 
+jumphost_role_arn = "arn:aws-us-gov:iam::352667531893:role/eks-jumphost-role"
 
 # FSx Lustre storage
 fsx_storage_capacity = 1200

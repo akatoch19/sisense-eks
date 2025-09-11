@@ -41,6 +41,7 @@ module "eks" {
   vpc_id              = module.vpc.vpc_id
   private_subnets = module.vpc.private_subnet_ids
   enable_oidc_provider = var.enable_oidc_provider
+  jumphost_role_arn = module.jumphost.role_arn
   env =var.env
 }
 
@@ -117,6 +118,8 @@ module "jumphost" {
   subnet_id          = var.private_subnet_id                # if you want a single subnet via var
   private_subnet_ids = module.vpc.private_subnet_ids        # <-- fixed here
   cluster_name  = var.cluster_name
+  cluster_sg_id = module.eks.cluster_security_group_id
+
   region        = var.aws_region
   instance_type = "t3.micro"
   key_name      = ""  # optional with SSM
