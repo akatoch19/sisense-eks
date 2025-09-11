@@ -82,9 +82,10 @@ module "addons" {
   eks_oidc_provider_url = local.eks_oidc_provider_url
   eks_oidc_provider_arn = local.eks_oidc_provider_arn
   eks_oidc_issuer = module.eks.cluster_oidc_issuer_url
+  fsx_irsa_role_arn = module.iam.fsx_irsa_role_arn
   env                   = var.env
   providers = {
-   kubernetes.eks    = kubernetes.eks
+   #kubernetes.eks    = kubernetes.eks
     helm.eks    = helm.eks
  }
   depends_on          = [module.eks, module.nodegroups]
@@ -108,6 +109,8 @@ module "iam" {
   cluster_name     = var.cluster_name
   account_id       = data.aws_caller_identity.current.account_id
   oidc_provider_arn = module.eks.oidc_provider_arn
+  eks_oidc_provider_arn  = module.eks.oidc_provider_arn
+  eks_oidc_provider_url = module.eks.cluster_oidc_issuer_url
 }
 ########################################################
 # jumphost
@@ -115,19 +118,17 @@ module "iam" {
 module "jumphost" {
   source = "./modules/jumphost"
   vpc_id             = module.vpc.vpc_id
-  subnet_id          = var.private_subnet_id                # if you want a single subnet via var
-  private_subnet_ids = module.vpc.private_subnet_ids        # <-- fixed here
+  subnet_id          = var.private_subnet_id             
+  private_subnet_ids = module.vpc.private_subnet_ids       
   cluster_name  = var.cluster_name
   cluster_sg_id = module.eks.cluster_security_group_id
-
   region        = var.aws_region
   instance_type = "t3.micro"
   key_name      = ""  # optional with SSM
 
   env  = var.env
 }
-
-########################################################
+######################################################
 # alb
 ########################################################
 
@@ -135,4 +136,8 @@ module "alb_controller" {
   source            = "./modules/alb_controller"
   cluster_name      = module.eks.cluster_name
   oidc_provider_arn = module.eks.oidc_provider_arn
+  providers = {
+   kubernetes.eks    = kubernetes.eks
+    helm.eks    = helm.eks
+}
 }

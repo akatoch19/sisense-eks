@@ -2,7 +2,14 @@
 ############################################################
 # EBS CSI as a managed EKS Add-on (no Kubernetes API needed)
 ############################################################
- 
+terraform {
+  required_providers {
+    helm = {
+      source = "hashicorp/helm"
+      configuration_aliases = [helm.eks]
+    }
+  }
+}
 data "aws_partition" "current" {}
 locals {
   eks_oidc_issuer          = var.eks_oidc_issuer
@@ -26,8 +33,6 @@ data "aws_iam_policy_document" "ebs_csi_trust" {
     }
   }
 }
-
- 
 resource "aws_iam_role" "ebs_csi_irsa" {
   name               = "${var.cluster_name}-ebs-csi-irsa"
   assume_role_policy = data.aws_iam_policy_document.ebs_csi_trust.json
@@ -48,8 +53,9 @@ resource "aws_eks_addon" "ebs_csi" {
   resolve_conflicts_on_update = "OVERWRITE"
   tags = { Env = var.env }
 }
-
+##########################################
 # Cluster autoscaler (optional Helm chart)
+###########################################
 resource "helm_release" "cluster_autoscaler" {
   provider   = helm.eks
   name       = "cluster-autoscaler"
@@ -57,9 +63,31 @@ resource "helm_release" "cluster_autoscaler" {
  chart      = "cluster-autoscaler"
  namespace  = "kube-system"
  version    = "9.24.0"
-
   set {
     name  = "autoDiscovery.clusterName"
     value = var.cluster_name
  }
 }
+#########################################
+# aws-fsx-csi-driver
+#########################################
+resource "helm_release" "fsx_csi" {
+  provider   = helm.eks
+  name       = "aws-fsx-csi-driver"
+  repository = "https://kubernetes-sigs.github.io/aws-fsx-csi-driver"
+  chart      = "aws-fsx-csi-driver"
+  namespace  = "kube-system"
+  set {
+    name  = "controller.serviceAccount.create"
+    value = "true"
+  }
+  set {
+    name  = "controller.serviceAccount.name"
+    value = "fsx-csi-controller-sa"
+  }
+  set {
+    name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = var.fsx_irsa_role_arn
+  }
+}
+

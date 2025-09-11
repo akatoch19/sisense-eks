@@ -7,7 +7,11 @@ locals {
       instance_types = var.instance_types
       disk_size      = var.disk_size
       node_role_arn  = var.node_iam_role
-      labels         = { role = "application" }
+      capacity_type = "ON_DEMAND"
+      labels = {
+        role                     = "application"
+        node-sisense-Application = "true"
+      }
     }
 
     sisense-query = {
@@ -17,17 +21,25 @@ locals {
       instance_types = var.instance_types
       disk_size      = var.disk_size
       node_role_arn  = var.node_iam_role
-      labels         = { role = "query" }
+      capacity_type = "ON_DEMAND"
+      labels = {
+        role                     = "query"
+        node-sisense-Query       = "true"
+      }
     }
 
     sisense-build = {
       desired_size   = 1
       min_size       = 1
       max_size       = 2
-      instance_types = var.instance_types
+      instance_types = ["m5.8xlarge"]
       disk_size      = var.disk_size
       node_role_arn  = var.node_iam_role
-      labels         = { role = "build" }
+      capacity_type  = "SPOT" 
+      labels  = { 
+        role         =         "build" 
+        node-sisense-Build = "true"
+        }
     }
   }
 }
@@ -47,4 +59,5 @@ module "nodegroups" {
   instance_types = each.value.instance_types
   disk_size      = each.value.disk_size
   labels         = each.value.labels
+  capacity_type  = each.value.capacity_type
 }

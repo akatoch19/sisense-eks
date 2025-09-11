@@ -53,4 +53,8 @@ variable "cluster_sg_id" {
   type        = string
 }
 
-
+variable "iam_instance_profile_name" {
+  description = "IAM instance profile name to attach to jumphost EC2"
+  type        = string
+   default     = null
+}
