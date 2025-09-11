@@ -18,20 +18,12 @@ resource "helm_release" "aws_load_balancer_controller" {
   depends_on = [kubernetes_service_account.aws_load_balancer_controller]
 }
 
-# IAM policy for ALB Controller
-data "aws_iam_policy_document" "alb_controller" {
-  statement {
-    effect    = "Allow"
-    actions   = ["*"]
-    resources = ["*"]
-  }
-}
-
 resource "aws_iam_policy" "alb_controller" {
   name        = "${var.cluster_name}-alb-controller"
-  description = "Policy for ALB Controller"
-  policy      = data.aws_iam_policy_document.alb_controller.json
+  description = "Policy for AWS Load Balancer Controller"
+  policy      = file("${path.module}/iam_policy.json")
 }
+
 
 # IAM role for service account (IRSA)
 resource "aws_iam_role" "alb_controller" {
