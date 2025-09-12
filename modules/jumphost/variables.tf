@@ -52,6 +52,10 @@ variable "cluster_sg_id" {
   description = "The ID of the EKS cluster security group"
   type        = string
 }
+variable "tags" {
+  description = "Global tags to apply to all resources"
+  type        = map(string)
+}
 
 variable "iam_instance_profile_name" {
   description = "IAM instance profile name to attach to jumphost EC2"
