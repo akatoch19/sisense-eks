@@ -6,9 +6,7 @@ resource "aws_fsx_lustre_file_system" "this" {
   deployment_type     = "PERSISTENT_1"
   per_unit_storage_throughput = 200
 
-  tags = {
-    Name = "${var.env}-fsx"
-  }
+  tags = var.tags
 }
 
 output "fsx_dns_name" { value = aws_fsx_lustre_file_system.this.dns_name }
