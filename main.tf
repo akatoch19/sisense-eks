@@ -19,6 +19,7 @@ module "vpc" {
   vpc_cidr     = var.vpc_cidr
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
+  tags = var.tags
 }
 
 #########################################################
@@ -29,6 +30,7 @@ module "sg" {
   vpc_id              = module.vpc.vpc_id
   fsx_sg_ingress_port = 988
   env                 = var.env
+  tags = var.tags
 }
 
 #########################################################
@@ -43,6 +45,7 @@ module "eks" {
   enable_oidc_provider = var.enable_oidc_provider
   jumphost_role_arn = module.jumphost.role_arn
   env =var.env
+  tags = var.tags
 }
 
 #########################################################
@@ -71,6 +74,7 @@ module "storage" {
   private_subnets = module.vpc.private_subnet_ids
   fsx_sg_id            = module.sg.fsx_sg_id
   env                  = var.env
+  tags = var.tags
 }
 # Kubernetes Addons (EBS CSI driver, Cluster Autoscaler)
 #########################################################
@@ -84,6 +88,7 @@ module "addons" {
   eks_oidc_issuer = module.eks.cluster_oidc_issuer_url
   fsx_irsa_role_arn = module.iam.fsx_irsa_role_arn
   env                   = var.env
+  tags = var.tags
   providers = {
    #kubernetes.eks    = kubernetes.eks
     helm.eks    = helm.eks
@@ -98,6 +103,7 @@ module "addons" {
 #  source    = "./modules/dns"
 #  zone_name = var.zone_name
 #  env       = var.env
+#  tags = var.tags
 #}
 
 #########################################################
@@ -111,6 +117,7 @@ module "iam" {
   oidc_provider_arn = module.eks.oidc_provider_arn
   eks_oidc_provider_arn  = module.eks.oidc_provider_arn
   eks_oidc_provider_url = module.eks.cluster_oidc_issuer_url
+  tags = var.tags
 }
 ########################################################
 # jumphost
@@ -127,6 +134,7 @@ module "jumphost" {
   key_name      = ""  # optional with SSM
 
   env  = var.env
+  tags = var.tags
 }
 ######################################################
 # alb
@@ -139,5 +147,6 @@ module "alb_controller" {
   providers = {
    kubernetes.eks    = kubernetes.eks
     helm.eks    = helm.eks
-}
+  }
+ tags = var.tags
 }
