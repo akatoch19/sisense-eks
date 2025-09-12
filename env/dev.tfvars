@@ -24,3 +24,15 @@ fsx_storage_capacity = 1200
 
 # Userdata bootstrap
 extra_userdata = "userdata/bootstrap.sh
+
+tags = { 
+  cst_backup_policy = "none"
+  cst_tenant = "multiple" 
+  cst_tenancy = "multiple" 
+  cst_environment = "dev" 
+  cst_product_line = "foundation" 
+  cst_compliance_domain = "cjis" 
+  cst_cost_center = "centralsquare_cloud_infrastructure" 
+  cst_application = "eks-platform" 
+  cst_name = "rms-dev-gov" 
+}
