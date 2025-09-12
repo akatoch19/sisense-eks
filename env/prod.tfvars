@@ -24,3 +24,15 @@ extra_userdata = "userdata/bootstrap.sh"
 # IAM / CNI
 use_custom_cni_policy = true
 eks_cni_govcloud_arn  = ""  # leave blank to use custom CNI
+
+tags = { 
+  cst_backup_policy = "none"
+  cst_tenant = "multiple" 
+  cst_tenancy = "multiple" 
+  cst_environment = "prod" 
+  cst_product_line = "foundation" 
+  cst_compliance_domain = "cjis" 
+  cst_cost_center = "centralsquare_cloud_infrastructure" 
+  cst_application = "eks-platform" 
+  cst_name = "rms-prod-gov" 
+}
