@@ -19,7 +19,7 @@ resource "aws_security_group" "eks_nodes" {
     cidr_blocks = ["0.0.0.0/0"]
   }
  
-  tags = { Name = "${var.env}-eks-nodes-sg" }
+  tags = var.tags
 }
 #####################################
 # Security group for FSx Lustre
@@ -63,7 +63,7 @@ resource "aws_security_group" "fsx" {
     cidr_blocks = ["0.0.0.0/0"]
   }
  
-  tags = { Name = "${var.env}-fsx-sg" }
+  tags = var.tags
 }
  
 output "eks_nodes_sg_id" {
