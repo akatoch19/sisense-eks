@@ -30,3 +30,8 @@ variable "env" {
 variable "eks_oidc_issuer" {
   type = string
 }
+
+variable "tags" {
+  description = "Global tags to apply to all resources"
+  type        = map(string)
+}
