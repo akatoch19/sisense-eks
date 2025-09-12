@@ -30,3 +30,8 @@ variable "enable_oidc_provider" {
 variable "jumphost_role_arn" {
   type = string
 }
+
+variable "tags" {
+  description = "Global tags to apply to all resources"
+  type        = map(string)
+}
