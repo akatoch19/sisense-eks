@@ -18,3 +18,8 @@ variable "env" {
   description = "Environment name (e.g., dev, prod)"
   type        = string
 }
+
+variable "tags" {
+  description = "Global tags to apply to all resources"
+  type        = map(string)
+}
