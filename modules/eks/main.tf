@@ -10,10 +10,7 @@ module "eks" {
   authentication_mode                      = "API_AND_CONFIG_MAP"
   enable_cluster_creator_admin_permissions = true
   
-  tags = {
-    Environment = var.env
-    Project     = "Sisense-dev-EKS"
-  }
+  tags = var.tags
 }  
 # Create access entry for the jumphost role
 resource "aws_eks_access_entry" "jumphost" {
