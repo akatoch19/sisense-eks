@@ -28,3 +28,8 @@ variable "nat_gateway_subnet_index" {
   default     = 0
 }
 
+variable "tags" {
+  description = "Global tags to apply to all resources"
+  type        = map(string)
+}
+
