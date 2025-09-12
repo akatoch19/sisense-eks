@@ -36,7 +36,7 @@ data "aws_iam_policy_document" "ebs_csi_trust" {
 resource "aws_iam_role" "ebs_csi_irsa" {
   name               = "${var.cluster_name}-ebs-csi-irsa"
   assume_role_policy = data.aws_iam_policy_document.ebs_csi_trust.json
-  tags = { Env = var.env }
+  tags = var.tags
 }
  
 resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
@@ -51,7 +51,7 @@ resource "aws_eks_addon" "ebs_csi" {
   # addon_version          = "v1.29.0-eksbuild.1"
   service_account_role_arn = aws_iam_role.ebs_csi_irsa.arn
   resolve_conflicts_on_update = "OVERWRITE"
-  tags = { Env = var.env }
+  tags = var.tags
 }
 ##########################################
 # Cluster autoscaler (optional Helm chart)
