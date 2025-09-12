@@ -132,9 +132,7 @@ resource "aws_instance" "jumphost" {
               curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
               EOF
  
-  tags = {
-    Name = "${var.env}-eks-jumphost"
-  }
+  tags = var.tags
 }
 output "security_group_id" {
   value = aws_security_group.jumphost_sg.id
