@@ -39,6 +39,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   ]
 
   depends_on = [kubernetes_service_account.aws_load_balancer_controller]
+  tags = var.tags
 }
 ##########################################################
 # Load IAM policy JSON from file (restricted AWS version)
