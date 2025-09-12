@@ -60,4 +60,5 @@ module "nodegroups" {
   disk_size      = each.value.disk_size
   labels         = each.value.labels
   capacity_type  = each.value.capacity_type
+  tags = var.tags
 }
