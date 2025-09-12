@@ -45,4 +45,9 @@ variable "namespace" {
 
 variable "subnet_ids" {
   type = list(string)
-}}
+}
+
+variable "tags" {
+  description = "Global tags to apply to all resources"
+  type        = map(string)
+}
