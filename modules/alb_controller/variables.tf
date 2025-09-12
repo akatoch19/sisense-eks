@@ -7,3 +7,8 @@ variable "oidc_provider_arn" {
   description = "EKS OIDC provider ARN"
   type        = string
 }
+
+variable "tags" {
+  description = "Global tags to apply to all resources"
+  type        = map(string)
+}
