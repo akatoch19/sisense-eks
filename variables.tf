@@ -105,6 +105,11 @@ variable "fsx_sg_ingress_port" {
   default     = 988
 }
 
+variable "tags" {
+  description = "Global tags to apply to all resources"
+  type        = map(string)
+}
+
 
 
 
