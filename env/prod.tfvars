@@ -36,3 +36,7 @@ tags = {
   cst_application = "eks-platform" 
   cst_name = "rms-prod-gov" 
 }
+
+# ✅ Existing VPC + Subnets
+vpc_id          = "vpc-0123456789abcdef0"
+private_subnets = ["subnet-aaa111", "subnet-bbb222", "subnet-ccc333"]
