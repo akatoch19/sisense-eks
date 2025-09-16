@@ -110,7 +110,16 @@ variable "tags" {
   type        = map(string)
 }
 
+# ✅ New variables for existing VPC
+variable "vpc_id" {
+  description = "ID of the existing VPC to deploy into"
+  type        = string
+}
 
+variable "private_subnets" {
+  description = "List of private subnet IDs in the existing VPC"
+  type        = list(string)
+}
 
 
 variable "private_subnet_id" {
