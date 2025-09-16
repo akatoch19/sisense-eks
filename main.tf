@@ -13,14 +13,14 @@
 #########################################################
 # VPC
 #########################################################
-module "vpc" {
+/* module "vpc" {
   source       = "./modules/vpc"
   env          = var.env
   vpc_cidr     = var.vpc_cidr
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
   tags = var.tags
-}
+} */
 
 #########################################################
 # Security Groups
@@ -40,8 +40,9 @@ module "eks" {
   source              = "./modules/eks"
   cluster_name        = var.cluster_name
   k8s_version         = var.k8s_version
-  vpc_id              = module.vpc.vpc_id
-  private_subnets = module.vpc.private_subnet_ids
+  # ✅ Use existing VPC instead of creating new
+  vpc_id     = var.vpc_id
+  subnet_ids = var.private_subnets
   enable_oidc_provider = var.enable_oidc_provider
   jumphost_role_arn = module.jumphost.role_arn
   env =var.env
