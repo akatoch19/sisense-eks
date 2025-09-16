@@ -42,7 +42,7 @@ module "eks" {
   k8s_version         = var.k8s_version
   # ✅ Use existing VPC instead of creating new
   vpc_id     = var.vpc_id
-  subnet_ids = var.private_subnets
+  private_subnets = var.private_subnets
   enable_oidc_provider = var.enable_oidc_provider
   jumphost_role_arn = module.jumphost.role_arn
   env =var.env
