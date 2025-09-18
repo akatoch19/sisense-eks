@@ -9,7 +9,21 @@ module "eks" {
   # New way to handle AWS Auth
   authentication_mode                      = "API_AND_CONFIG_MAP"
   enable_cluster_creator_admin_permissions = true
-  
+   # --- Add-ons ---
+  cluster_addons = {
+    vpc-cni = {
+      resolve_conflicts = "OVERWRITE"
+      most_recent       = true
+    }
+    kube-proxy = {
+      resolve_conflicts = "OVERWRITE"
+      most_recent       = true
+    }
+    coredns = {
+      resolve_conflicts = "OVERWRITE"
+      most_recent       = true
+    }
+  }
   tags = var.tags
 }  
 # Create access entry for the jumphost role
@@ -29,6 +43,7 @@ resource "aws_eks_access_policy_association" "jumphost_admin" {
       }
   depends_on   = [aws_eks_access_entry.jumphost]
 }
+
  
 output "cluster_name" {
   value = var.cluster_name
