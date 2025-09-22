@@ -17,8 +17,17 @@ variable "account_id" {
   description = "AWS Account ID"
   type        = string
 }
+variable "eks_oidc_provider_arn" {
+  type = string
+}
+ 
+
+variable "oidc_provider_url" {
+  type        = string
+  description = "URL of the cluster's OIDC provider (without https://)"
+}
 
 variable "tags" {
-  description = "Global tags to apply to all resources"
-  type        = map(string)
+  type    = map(string)
+  default = {}
 }

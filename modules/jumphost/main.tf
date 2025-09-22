@@ -13,11 +13,6 @@ data "aws_subnets" "private" {
   }
 }
  
-resource "random_shuffle" "private_subnet" {
-  input        = data.aws_subnets.private.ids
-  result_count = 1
-}
- 
 ###########################################
 # Security Group (egress-only; inbound via SSM)
 ##############################################
@@ -89,7 +84,14 @@ resource "aws_iam_policy" "jumphost_custom" {
         "iam:Get*",
         "iam:List*",
         "logs:*",
-        "cloudwatch:*"
+        "cloudwatch:*",
+        "s3:GetEncryptionConfiguration",
+        "s3:PutObject",
+         "s3:GetBucketLocation",
+         "s3:ListBucket",
+        "kms:Decrypt",
+        "kms:DescribeKey",
+        "kms:GenerateDataKey*"
       ],
       "Resource": "*"
     }
@@ -101,6 +103,11 @@ resource "aws_iam_role_policy_attachment" "jumphost_custom_attach" {
   role       = aws_iam_role.jumphost_role.name
   policy_arn = aws_iam_policy.jumphost_custom.arn
 }
+
+resource "aws_iam_role_policy_attachment" "jumphost_ssm_core" {
+  role       = aws_iam_role.jumphost_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
 #########################################
 # EC2 Jumphost in private subnet
 ##########################################
@@ -111,10 +118,9 @@ data "aws_ssm_parameter" "al2023_x86" {
 resource "aws_instance" "jumphost" {
   ami                    = data.aws_ssm_parameter.al2023_x86.value
   instance_type          = var.instance_type
-  subnet_id              = element(var.private_subnet_ids, 0)
+  subnet_id              =  var.subnet_id  
   associate_public_ip_address = false
-  iam_instance_profile = var.iam_instance_profile_name != null && var.iam_instance_profile_name != "" ? var.iam_instance_profile_name : aws_iam_instance_profile.jumphost_instance_profile.name
-  key_name               = var.key_name
+iam_instance_profile        = aws_iam_instance_profile.jumphost_instance_profile.name
   vpc_security_group_ids = [aws_security_group.jumphost_sg.id]
 
  
@@ -130,9 +136,13 @@ resource "aws_instance" "jumphost" {
               unzip -q awscliv2.zip && ./aws/install
               # Helm
               curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+              #k9s
+              curl -sS https://webinstall.dev/k9s | bash
               EOF
  
-  tags = var.tags
+  tags = {
+    Name = "${var.env}-eks-jumphost"
+  }
 }
 output "security_group_id" {
   value = aws_security_group.jumphost_sg.id
@@ -141,4 +151,3 @@ output "security_group_id" {
 output "role_arn" {
   value = aws_iam_role.jumphost_role.arn
 }
-

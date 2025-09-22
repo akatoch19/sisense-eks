@@ -73,6 +73,7 @@ resource "helm_release" "cluster_autoscaler" {
 #########################################
 resource "helm_release" "fsx_csi" {
   provider   = helm.eks
+  count = var.fsx_irsa_role_arn == null ? 0 : 1
   name       = "aws-fsx-csi-driver"
   repository = "https://kubernetes-sigs.github.io/aws-fsx-csi-driver"
   chart      = "aws-fsx-csi-driver"
@@ -90,4 +91,3 @@ resource "helm_release" "fsx_csi" {
     value = var.fsx_irsa_role_arn
   }
 }
-

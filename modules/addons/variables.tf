@@ -30,8 +30,15 @@ variable "env" {
 variable "eks_oidc_issuer" {
   type = string
 }
+ 
 
 variable "tags" {
-  description = "Global tags to apply to all resources"
-  type        = map(string)
+  type    = map(string)
+  default = {}
 }
+ variable "fsx_irsa_role_arn" {
+  description = "IAM role ARN for the FSx CSI controller service account"
+  type        = string
+default = null
+}
+ 

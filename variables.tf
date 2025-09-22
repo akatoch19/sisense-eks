@@ -5,40 +5,29 @@ variable "env" {
 
 variable "aws_region" {
   type    = string
-  default = "us-gov-west-1"
+  default = "us-east-1"
+
+}
+variable "ami_type" {
+  description = "The AMI type for the node group"
+  type        = string
+  default     = "AL2_x86_64"
 }
 
-# VPC
-variable "vpc_cidr" {
-  type    = string
-  default = "10.0.0.0/16"
+variable "vpc_id" {
+  description = "ID of the existing VPC to deploy into"
+  type        = string
+  default     =  "vpc-069b89b9b7e34fda1" 
 }
 
 variable "private_subnets" {
   type    = list(string)
-  default = ["10.0.1.0/24","10.0.2.0/24","10.0.3.0/24"]
-}
-
-variable "public_subnets" {
-  type    = list(string)
-  default = ["10.0.101.0/24","10.0.102.0/24","10.0.103.0/24"]
-}
-# NAT controls (separate, as requested)
-variable "enable_nat_gateway" {
-  description = "Create one NAT Gateway in a public subnet for all private subnets"
-  type        = bool
-  default     = true
-}
- 
-variable "nat_gateway_subnet_index" {
-  description = "Index of the PUBLIC subnet to host the NAT GW (0-based)"
-  type        = number
-  default     = 0
+  default = ["subnet-06e67684de6f297e6", "subnet-04a89427e7493986d", "subnet-07b9b67491137739d"]
 }
 # EKS
 variable "cluster_name" {
   type    = string
-  default = "sisense-eks"
+  default = "sisense-staging-eks"
 }
 
 variable "k8s_version" {
@@ -52,10 +41,10 @@ variable "enable_oidc_provider" {
 }
 
 # Node Groups
-variable "instance_types" {
-  type    = list(string)
-  default = ["m5.4xlarge"]
-}
+#variable "instance_types" {
+ # type    = list(string)
+ # default = ["c6g.large"]
+#}
 
 variable "disk_size" {
   type    = number
@@ -95,8 +84,8 @@ variable "fsx_storage_capacity" {
 
 # DNS
 #variable "zone_name" {
- # type    = string
-  #default = "sisense.myleslie.com"
+# type    = string
+#default = "sisense.myleslie.com"
 #}
 
 variable "fsx_sg_ingress_port" {
@@ -104,24 +93,20 @@ variable "fsx_sg_ingress_port" {
   type        = number
   default     = 988
 }
-
 variable "tags" {
-  description = "Global tags to apply to all resources"
-  type        = map(string)
+  type    = map(string)
+  default = {}
 }
 
-# ✅ New variables for existing VPC
-variable "vpc_id" {
-  description = "ID of the existing VPC to deploy into"
+variable "jumphost_subnet_index" {
+  type    = number
+  default = 0
+}
+
+variable "instance_type" {
   type        = string
-}
-
-variable "private_subnets" {
-  description = "List of private subnet IDs in the existing VPC"
-  type        = list(string)
+  description = "EC2 instance type for the jumphost"
+  default     = "t3.micro"
 }
 
 
-variable "private_subnet_id" {
-  description = "Public subnet ID for bastion host"
-}

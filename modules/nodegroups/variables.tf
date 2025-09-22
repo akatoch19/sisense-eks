@@ -18,17 +18,18 @@ variable "max_size" {
   type        = number
 }
 
-variable "instance_types" {
-  description = "List of EC2 instance types for worker nodes"
-  type        = list(string)
-}
+#variable "instance_types" {
+  #description = "List of EC2 instance types for worker nodes"
+ # type        = list(string)
+ # default = {}
+#}
 
 variable "disk_size" {
   description = "EBS volume size (in GiB) for each worker node"
   type        = number
 }
 
-variable "node_iam_role" {
+variable "node_role_arn" {
   description = "IAM role ARN to associate with EKS node groups"
   type        = string
 }
@@ -46,8 +47,24 @@ variable "namespace" {
 variable "subnet_ids" {
   type = list(string)
 }
+variable "ami_type" {
+  description = "The AMI type for the node group"
+  type        = string
+}
 
-variable "tags" {
-  description = "Global tags to apply to all resources"
-  type        = map(string)
+#variable "launch_template" {
+  #type = object({
+  #  id      = string
+  #  version = string
+  #})
+ # description = "Common Launch Template to apply to all managed node groups"
+#}
+variable "node_iam_role" {
+  description = "IAM role ARN to associate with EKS node groups"
+  type        = string
+}
+
+variable "common_tags" {
+  type    = map(string)
+  default = {}
 }

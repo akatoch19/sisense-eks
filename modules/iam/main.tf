@@ -78,6 +78,7 @@ resource "aws_iam_role_policy_attachment" "ebs_attach" {
   role       = aws_iam_role.ebs_csi_role.name
   policy_arn = aws_iam_policy.ebs_csi_policy.arn
 }
+
 ############################
 # Outputs
 ############################
@@ -88,3 +89,4 @@ output "eks_node_role_arn" {
 output "ebs_csi_role_arn" {
   value = aws_iam_role.ebs_csi_role.arn
 }
+
