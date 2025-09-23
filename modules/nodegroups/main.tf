@@ -65,8 +65,12 @@ module "nodegroups" {
   capacity_type  = each.value.capacity_type
   #launch_template_id      = each.value.launch_template.id
   #launch_template_version = "$Latest"
-
- tags = { 
+  tags = "${merge(var.tags, 
+                map("role", "each.key", 
+                    "Name", "${var.cluster_name}-${each.key}")
+               )
+         }"
+ /* tags = { 
   cst_environment                   = "dev"
   cst_backup_policy                 = "none" 
   cst_product_line                  = "foundation" 
@@ -78,7 +82,7 @@ module "nodegroups" {
   cst_application                   = "psj_crimeanalytics"
   role = each.key
   Name        = "${var.cluster_name}-${each.key}"
-}
+} */
 
 
 }
