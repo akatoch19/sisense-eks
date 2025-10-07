@@ -78,12 +78,12 @@ module "addons" {
   eks_oidc_issuer       = module.eks.cluster_oidc_issuer_url
   #fsx_irsa_role_arn     = module.iam.fsx_irsa_role_arn
   depends_on = [
-     module.eks,module.iam, module.nodegroups ]          
+     module.eks,module.iam, module.nodegroups ]
   env                   = var.env
   providers = {
    helm.eks = helm.eks
   }
- 
+
 }
 
 #########################################################
@@ -130,8 +130,8 @@ module "alb_controller" {
   oidc_provider_arn = module.eks.oidc_provider_arn
   depends_on = [
     module.eks,
-    module.iam,        
-    module.nodegroups 
+    module.iam,
+    module.nodegroups
   ]
 
   providers = {
@@ -140,10 +140,32 @@ module "alb_controller" {
   }
 }
 
+#########################################################
+
+RDS
+
+##########################################################
+
+module "rds_mssql" {
+  source = "./modules/rds_mssql"
+
+  vpc_id           = module.vpc.vpc_id
+  subnet_ids       = module.vpc.private_subnets
+  db_name          = "sisense"
+  instance_class   = "db.m6i.xlarge"
+  username         = "adminuser"
+  password         = var.db_password
+  ad_directory_id  = var.ad_directory_id
+  eks_node_sg_ids  = [for ng in module.eks.node_groups : ng.security_group_id]
+  common_tags      = var.common_tags
+}
+
+
+
 #module "lt" {
  # source = "./modules/launch_template"
- 
+
   # pass in variables the LT module needs (like disk_size, ami_id, etc.)
   # example:
- 
+
 #}

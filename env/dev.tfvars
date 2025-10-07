@@ -25,18 +25,23 @@ fsx_storage_capacity = 1200
 # Userdata bootstrap
 extra_userdata = "userdata/bootstrap.sh
 
-tags = { 
+tags = {
   cst_backup_policy = "none"
-  cst_tenant = "multiple" 
-  cst_tenancy = "multiple" 
-  cst_environment = "dev" 
-  cst_product_line = "foundation" 
-  cst_compliance_domain = "cjis" 
-  cst_cost_center = "centralsquare_cloud_infrastructure" 
-  cst_application = "eks-platform" 
+  cst_tenant = "multiple"
+  cst_tenancy = "multiple"
+  cst_environment = "dev"
+  cst_product_line = "foundation"
+  cst_compliance_domain = "cjis"
+  cst_cost_center = "centralsquare_cloud_infrastructure"
+  cst_application = "eks-platform"
   cst_name = "rms-dev-gov" 
 }
 
 # ✅ Existing VPC + Subnets
 vpc_id          = "vpc-0123456789abcdef0"
 private_subnets = ["subnet-aaa111", "subnet-bbb222", "subnet-ccc333"]
+
+# rds
+
+db_password     = "StrongP@ssw0rd!"   # ideally store in AWS Secrets Manager
+ad_directory_id = "d-9067b7e12e"      # replace with your directory ID

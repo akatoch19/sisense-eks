@@ -17,7 +17,7 @@ variable "ami_type" {
 variable "vpc_id" {
   description = "ID of the existing VPC to deploy into"
   type        = string
-  default     =  "vpc-069b89b9b7e34fda1" 
+  default     =  "vpc-069b89b9b7e34fda1"
 }
 
 variable "private_subnets" {
@@ -110,3 +110,13 @@ variable "instance_type" {
 }
 
 
+variable "db_password" {
+  description = "RDS admin password"
+  type        = string
+  sensitive   = true
+}
+
+variable "ad_directory_id" {
+  description = "Directory Service ID for Windows Authentication"
+  type        = string
+}
