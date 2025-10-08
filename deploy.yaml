@@ -1,0 +1,101 @@
+---
+trigger:
+- none
+
+name: ${{ parameters.stack_name }}
+parameters:
+- name: stack_name
+  displayName: Name of the EKS cluster
+
+- name: deployment_region
+  displayName: Deployment Region
+  default: primary
+  values:
+  - primary
+  - secondary
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- template: simple-eks/${{ parameters.stack_name }}/shared.yaml@configs
+- template: simple-eks/${{ parameters.stack_name }}/${{ parameters.deployment_region }}_region.yaml@configs
+
+- name: deployment_account_service_connection
+  value: "${{ variables.service_connection }}-${{ variables.aws_account_id }}"
+- name: shared_services_account_service_connection
+  value: "${{ variables.service_connection }}-${{ variables.shared_services_aws_account_id }}"
+- name: terraform_deployment_service_connection
+  value: "aws-terraform-connection-${{ variables.aws_region }}-${{ variables.aws_account_id }}"
+- name: networking_stack
+  value: "${{ parameters.stack_name }}"
+
+resources:
+  repositories:
+  - repository: pipelines
+    name: Cloud Foundation/cst-pipeline-templates
+    type: git
+    ref: service-connection-option
+  - repository: configs
+    name: Cloud Foundation/cloud-foundation-configs
+    type: git
+    ref: simple-eks-solution
+
+
+- stage: terraform_eks
+  displayName: "Terraform Init/Plan Simple EKS"
+  dependsOn: [terraform_vpc]
+  jobs:
+  - job: terraform_install
+    displayName: "Terraform Init/Plan Simple EKS"
+    steps:
+    - checkout: self
+      clean: true
+    - checkout: configs
+    - task: Bash@3
+      displayName: Install Terraform
+      inputs:
+        targetType: inline
+        script: |
+          set -e -x -o pipefail
+
+          wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+          sudo apt update && sudo apt install terraform
+
+    - task: TerraformTask@5
+      displayName: Terraform Init
+      inputs:
+        workingDirectory: simple-eks-platform/terraform/eks
+        provider: 'aws'
+        command: 'init'
+        backendAWSBucketName: "cst-comm-internal-simple-eks-solution-tf-state"
+        backendAWSKey: "${{ variables.aws_account_id }}/${{ parameters.stack_name }}/${{ variables.aws_region }}/simple-eks/${{ parameters.stack_name }}/simple-eks-cluster.tfstate"
+        backendServiceAWS: "${{ variables.terraform_deployment_service_connection }}"
+
+    - task: TerraformTask@5
+      name: terraformPlan
+      displayName: Terraform Plan
+      inputs:
+        workingDirectory: simple-eks-platform/terraform/eks
+        provider: 'aws'
+        command: 'plan'
+        commandOptions: '-out tfplan 
+          -var="stack_name=${{ parameters.stack_name }}"
+          -var-file=$(System.DefaultWorkingDirectory)/cloud-foundation-configs/account/${{ variables.aws_account_id }}/shared.tfvars 
+          -var-file=$(System.DefaultWorkingDirectory)/cloud-foundation-configs/account/${{ variables.aws_account_id }}/${{ parameters.deployment_region }}_region.tfvars 
+          -var-file=$(System.DefaultWorkingDirectory)/cloud-foundation-configs/networking/${{ parameters.stack_name }}/shared.tfvars
+          -var-file=$(System.DefaultWorkingDirectory)/cloud-foundation-configs/simple-eks/${{ parameters.stack_name }}/shared.tfvars'
+        environmentServiceNameAWS: ${{ variables.terraform_deployment_service_connection }}
+
+    - task: TerraformTask@5
+      name: terraformApply
+      displayName: Terraform Apply
+      inputs:
+        workingDirectory: simple-eks-platform/terraform/eks
+        provider: 'aws'
+        command: 'apply'
+        commandOptions: 'tfplan'
+        environmentServiceNameAWS: ${{ variables.terraform_deployment_service_connection }}
+
+

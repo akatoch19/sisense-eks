@@ -4,7 +4,7 @@ locals {
       desired_size   = var.desired_size
       min_size       = var.min_size
       max_size       = var.max_size
-      disk_size      = var.disk_size
+      disk_size_gib     = 400
       node_role_arn  = var.node_role_arn
       instance_types = ["m6i.2xlarge"]
       capacity_type = "ON_DEMAND"
@@ -12,22 +12,24 @@ locals {
         role                     = "application"
         node-sisense-Application = "true"
       }
+      name_tag = "sisense-application"
       #launch_template = var.launch_template
-
+      
     }
 
     sisense-query = {
-      desired_size   = var.desired_size
-      min_size       = var.min_size
-      max_size       = var.max_size
+      desired_size   = 1
+      min_size       = 1
+      max_size       = 1
       instance_types = ["r6i.2xlarge"]
-      disk_size      = var.disk_size
+      disk_size_gib     = 400
       node_role_arn  = var.node_role_arn
       capacity_type = "ON_DEMAND"
       labels = {
         role                     = "query"
         node-sisense-Query       = "true"
       }
+      name_tag = "sisense-query"
       #launch_template = var.launch_template
     }
 
@@ -35,28 +37,21 @@ locals {
       desired_size   = 1
       min_size       = 1
       max_size       = 1
+      disk_size_gib     = 400
       instance_types = ["m6i.2xlarge"]
-      disk_size      = var.disk_size
       node_role_arn  = var.node_role_arn
-      capacity_type  = "ON_DEMAND"
-      labels  = {
-        role         =         "build"
+      capacity_type  = "ON_DEMAND" 
+      labels  = { 
+        role         =         "build" 
         node-sisense-Build = "true"
         }
+        name_tag = "sisense-build"
 
         #launch_template = var.launch_template
     }
   }
 }
 
-<<<<<<< HEAD
-resource "aws_launch_template" "nodegroup" {
-  for_each      = local.node_groups
-  name_prefix   = "${var.cluster_name}-${each.key}-"
-  image_id      = data.aws_ami.eks_worker.id
-  instance_type = each.value.instance_types[0]  # single instance type
-  key_name      = var.key_name
-=======
 module "nodegroups" {
  source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
   version = "20.0.0"
@@ -64,81 +59,23 @@ module "nodegroups" {
   cluster_name   = var.cluster_name
   subnet_ids     = var.subnet_ids
   name           = each.key
-  desired_size   = each.value.desired_size
   min_size       = each.value.min_size
   max_size       = each.value.max_size
   instance_types = each.value.instance_types
-  disk_size      = each.value.disk_size
+  #disk_size_gib     = each.value.disk_size_gib
   labels         = each.value.labels
   capacity_type  = each.value.capacity_type
-  #launch_template_id      = each.value.launch_template.id
-  #launch_template_version = "$Latest"
+  create_launch_template = false
+  #use_custom_launch_template = false
+  #pre_bootstrap_user_data = var.extra_userdata
+  launch_template_id      = aws_launch_template.ng[each.key].id
+  launch_template_version = aws_launch_template.ng[each.key].latest_version
+  
   tags = merge(
-    var.tags,
-    {
-      role = each.key
-      Name = "${var.cluster_name}-${each.key}"
-    }
-  )
- /* tags = { 
-  cst_environment                   = "dev"
-  cst_backup_policy                 = "none" 
-  cst_product_line                  = "foundation" 
-  cst_tenant                        = "foundation" 
-  cst_cost_center                   = "infrastructure"
-  cst_name                          = "psj_crimeanalytics"
-  cst_compliance_domain             = "cjis"
-  cst_tenancy                       = "multiple"
-  cst_application                   = "psj_crimeanalytics"
-  role = each.key
-  Name        = "${var.cluster_name}-${each.key}"
-} */
->>>>>>> 8544ecba230e6653b9117b0fece7ee9b39846736
-
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      volume_size = each.value.disk_size
-      volume_type = "gp3"
-    }
+  var.tags,
+  {
+    role = lookup(var.tags, "role", each.key)
+    Name = lookup(var.tags, "Name", "${var.cluster_name}-${each.key}")
   }
-
-  tag_specifications {
-    resource_type = "instance"
-    tags = merge(
-      var.tags,
-      {
-        Name = "${var.cluster_name}-${each.key}"
-        role = each.key
-      }
-    )
-  }
-}
-
-module "nodegroups" {
-  source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
-  version = "20.0.0"
-
-  for_each      = local.node_groups
-  cluster_name  = var.cluster_name
-  subnet_ids    = var.subnet_ids
-  name          = each.key
-  desired_size  = each.value.desired_size
-  min_size      = each.value.min_size
-  max_size      = each.value.max_size
-  labels        = each.value.labels
-  capacity_type = each.value.capacity_type
-
-  launch_template {
-    id      = aws_launch_template.nodegroup[each.key].id
-    version = "$Latest"
-  }
-
-  # Node group tags (applied to the EKS Node Group itself)
-  tags = merge(
-    var.tags,
-    {
-      role = each.key
-    }
-  )
+)
 }
