@@ -49,12 +49,51 @@ locals {
   }
 }
 
+<<<<<<< HEAD
 resource "aws_launch_template" "nodegroup" {
   for_each      = local.node_groups
   name_prefix   = "${var.cluster_name}-${each.key}-"
   image_id      = data.aws_ami.eks_worker.id
   instance_type = each.value.instance_types[0]  # single instance type
   key_name      = var.key_name
+=======
+module "nodegroups" {
+ source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
+  version = "20.0.0"
+  for_each = local.node_groups
+  cluster_name   = var.cluster_name
+  subnet_ids     = var.subnet_ids
+  name           = each.key
+  desired_size   = each.value.desired_size
+  min_size       = each.value.min_size
+  max_size       = each.value.max_size
+  instance_types = each.value.instance_types
+  disk_size      = each.value.disk_size
+  labels         = each.value.labels
+  capacity_type  = each.value.capacity_type
+  #launch_template_id      = each.value.launch_template.id
+  #launch_template_version = "$Latest"
+  tags = merge(
+    var.tags,
+    {
+      role = each.key
+      Name = "${var.cluster_name}-${each.key}"
+    }
+  )
+ /* tags = { 
+  cst_environment                   = "dev"
+  cst_backup_policy                 = "none" 
+  cst_product_line                  = "foundation" 
+  cst_tenant                        = "foundation" 
+  cst_cost_center                   = "infrastructure"
+  cst_name                          = "psj_crimeanalytics"
+  cst_compliance_domain             = "cjis"
+  cst_tenancy                       = "multiple"
+  cst_application                   = "psj_crimeanalytics"
+  role = each.key
+  Name        = "${var.cluster_name}-${each.key}"
+} */
+>>>>>>> 8544ecba230e6653b9117b0fece7ee9b39846736
 
   block_device_mappings {
     device_name = "/dev/xvda"
