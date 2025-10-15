@@ -68,3 +68,16 @@ variable "common_tags" {
   type    = map(string)
   default = {}
 }
+
+variable "ssh_key_name" {
+   description = "Optional: Name of the SSH key pair to use for EKS nodes. If not provided, one will be created and stored in SSM."
+   type        = string
+   default     = null
+ }
+
+ variable "ssm_ssh_key_param_name" {
+   description = "SSM Parameter name to store the private key if a new one is created"
+   type        = string
+   default     = "/eks/ssh_key/private"
+ }
+
