@@ -47,7 +47,7 @@ module "nodegroups" {
   subnet_ids     = var.private_subnets
   ami_type       = var.ami_type
   node_role_arn = module.iam.eks_node_role_arn
-  ssh_key_name = null  # leave null to auto-create, or set to existing key name
+  ssh_key_name  = module.eks.eks_ssh_key_name
   #launch_template = module.lt.launch_template
   #depends_on = [
   #  module.lt
