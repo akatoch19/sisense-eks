@@ -70,7 +70,11 @@ module "nodegroups" {
   #pre_bootstrap_user_data = var.extra_userdata
   launch_template_id      = aws_launch_template.ng[each.key].id
   launch_template_version = aws_launch_template.ng[each.key].latest_version
-  
+  remote_access {
+    ec2_ssh_key = var.ssh_key_name
+    # optionally restrict source SGs:
+    # source_security_groups = [aws_security_group.bastion.id]
+  }
   tags = merge(
   var.tags,
   {
