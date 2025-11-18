@@ -5,70 +5,55 @@ variable "env" {
 
 variable "aws_region" {
   type    = string
-  default = "us-gov-west-1"
-}
+  default = ""
 
-# VPC
-variable "vpc_cidr" {
+}
+variable "aws_partition" {
   type    = string
-  default = "10.0.0.0/16"
+  default = ""
+
+}
+variable "ami_type" {
+  description = "The AMI type for the node group"
+  type        = string
+}
+variable "use_networking_remote_state" {
+  type    = bool
+  default = false
 }
 
 variable "private_subnets" {
   type    = list(string)
-  default = ["10.0.1.0/24","10.0.2.0/24","10.0.3.0/24"]
+  default = []
 }
-
-variable "public_subnets" {
-  type    = list(string)
-  default = ["10.0.101.0/24","10.0.102.0/24","10.0.103.0/24"]
-}
-
 # EKS
 variable "cluster_name" {
   type    = string
-  default = "sisense-eks"
 }
 
 variable "k8s_version" {
   type    = string
-  default = "1.32"
 }
 
 variable "enable_oidc_provider" {
   type    = bool
   default = true
 }
-
-# Node Groups
-variable "instance_types" {
-  type    = list(string)
-  default = ["m5.4xlarge"]
-}
-
-variable "disk_size" {
-  type    = number
-  default = 400
-}
-
-variable "min_size" {
-  type    = number
-  default = 3
-}
-
-variable "max_size" {
-  type    = number
-  default = 6
-}
-
-variable "desired_size" {
-  type    = number
-  default = 4
-}
-
-variable "extra_userdata" {
+variable "fsx_version" {
   type    = string
-  default = "userdata/bootstrap.sh"
+}
+
+
+variable "node_groups" {
+  description = "Min/max/desired/instance types per node group"
+  type = map(object({
+    desired_size   = number
+    min_size       = number
+    max_size       = number
+    instance_types = list(string)
+    disk_size = number
+  }))
+  default     = {}
 }
 
 variable "namespace" {
@@ -79,17 +64,94 @@ variable "namespace" {
 # FSx
 variable "fsx_storage_capacity" {
   type    = number
-  default = 1200
 }
 
 # DNS
-#variable "zone_name" {
- # type    = string
-  #default = "sisense.myleslie.com"
-#}
+variable "zone_name" {
+ type    = string
+default = ""
+}
 
 variable "fsx_sg_ingress_port" {
   description = "Port for FSx Lustre inbound traffic (default 988)"
   type        = number
   default     = 988
 }
+variable "tags" {
+  type    = map(string)
+  default = {}
+}
+
+variable "jumphost_subnet_index" {
+  type    = number
+  default = 0
+}
+
+variable "instance_type" {
+  type        = string
+  description = "EC2 instance type for the jumphost"
+ 
+}
+
+variable "sa_namespace" {
+  type        = string
+  description = "Namespace of the service account for the cluster autoscaler"
+  default     = "default"
+}
+ 
+variable "sa_name" {
+  type        = string
+  description = "Name of the service account for the cluster autoscaler"
+  default = ""
+
+}
+variable "account_vpc_name" {
+  type        = string
+  description = "Name tag of the VPC for this EKS cluster"
+}
+variable "aws_account_id" {
+  type = string
+}
+ variable "cluster_service_cidr" {
+  type        = string
+  description = "Kubernetes service CIDR block"
+  default     = "172.20.0.0/16"
+}
+variable "enable_ebs_csi_driver" {
+  type    = bool
+  default = true
+}
+variable "cloud_admin_entrypoint_role_arn" {
+  description = "IAM role ARN that acts as the cloud admin entry point for EKS"
+  type        = string
+}
+
+variable "target_deployment_role" {
+  type        = string
+  description = "name of the role to assume from deployment account"
+}
+
+#variable "ad_directory_id" {
+ # description = "Directory Service ID for Windows Authentication"
+ # type        = string
+#}
+/*variable "db_subnets" { 
+  type = list(string)
+   }
+variable "db_name" { 
+  type = string 
+  }
+variable "db_username" {
+   type = string
+    }
+variable "db_instance_class" { 
+  type = string 
+  }
+  variable "common_tags" {
+  type        = map(string)
+  default     = {}
+}
+variable "region" {
+  type    = string
+
+}*/

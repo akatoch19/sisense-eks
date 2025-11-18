@@ -4,35 +4,36 @@ variable "cluster_name" {
 }
 
 variable "k8s_version" {
-  description = "Kubernetes version for the EKS cluster"
-  type        = string
-  default     = "1.31"
-}
-
-variable "vpc_id" {
-  description = "VPC ID where EKS cluster will be deployed"
+  description = "Kubernetes version to use for the EKS cluster"
   type        = string
 }
 
 variable "private_subnets" {
-  description = "List of private subnet IDs for the EKS cluster"
+  description = "List of private subnet IDs for worker nodes"
   type        = list(string)
 }
 
-variable "enable_oidc_provider" {
-  description = "Enable OIDC provider for IRSA"
-  type        = bool
-  default     = true
-}
-
-variable "kms_key_id" {
-  description = "Existing KMS key ARN to encrypt Kubernetes secrets. Leave null to disable encryption."
+variable "vpc_id" {
+  description = "VPC ID where the EKS cluster will be deployed"
   type        = string
-  default     = null
+}
+
+variable "enable_irsa" {
+  type    = bool
+  default = true
+}
+ 
+ variable "env" {
+  type        = string
+  description = "Environment name (e.g., dev, staging, prod)"
+}
+
+variable "jumphost_role_arn" {
+  type = string
 }
 
 
-variable "env" {
-  description = "Deployment environment (e.g., dev, prod)"
+variable "cloud_admin_entrypoint_role_arn" {
+  description = "IAM role ARN that acts as the cloud admin entry point for EKS"
   type        = string
 }

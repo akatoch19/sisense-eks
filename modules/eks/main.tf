@@ -1,41 +1,105 @@
+#####################################
+#module eks
+######################################
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
-
-
   cluster_name    = var.cluster_name
   cluster_version = var.k8s_version
   vpc_id          = var.vpc_id
   subnet_ids      = var.private_subnets
-  enable_irsa     = var.enable_oidc_provider
-
-  # New way to handle AWS Auth
+  enable_irsa     = true
+  cluster_endpoint_public_access           = true
+  cluster_endpoint_private_access          = true
   authentication_mode                      = "API_AND_CONFIG_MAP"
   enable_cluster_creator_admin_permissions = true
-
-  # -------------------------------
-  # Optional KMS key for secrets encryption
-  # -------------------------------
-  cluster_encryption_config = var.kms_key_id == null ? [] : [{
-  resources        = ["secrets"]
-  provider_key_arn = var.kms_key_id
-  }]
-
-  # -------------------------------
-  # Control plane logging
-  # -------------------------------
-  cluster_enabled_log_types = []
-
-  tags = {
-    Environment = var.env
-    Project     = "Sisense-EKS"
+  cluster_addons = {
+    vpc-cni = {
+      resolve_conflicts = "OVERWRITE"
+      most_recent       = true
+    }
+    kube-proxy = {
+      resolve_conflicts = "OVERWRITE"
+      most_recent       = true
+    }
+    #coredns = {
+      #resolve_conflicts = "OVERWRITE"
+     # most_recent       = true
+    #}
   }
 }
-
-output "cluster_name" {
-  value = module.eks.cluster_id
+################################################# 
+# Create access entry for the jumphost role
+#################################################
+resource "aws_eks_access_entry" "jumphost" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = var.jumphost_role_arn
+  type          = "STANDARD"
 }
+###########################################
+# Create access entry for the cloud admin entry point
+###########################################
+resource "aws_eks_access_entry" "cloud_admin_entrypoint" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = var.cloud_admin_entrypoint_role_arn
+  type          = "STANDARD"
+}
+ 
+###########################################
+# Give cluster-admin to the cloud admin entry point
+###########################################
+resource "aws_eks_access_policy_association" "cloud_admin_entrypoint" {
+  cluster_name  = module.eks.cluster_name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = var.cloud_admin_entrypoint_role_arn
+ 
+  access_scope {
+    type = "cluster"
+  }
+ 
+  depends_on = [aws_eks_access_entry.cloud_admin_entrypoint]
+}
+####################################################
+# Give cluster-admin to the jumphost role
+####################################################
+resource "aws_eks_access_policy_association" "jumphost_admin" {
+  cluster_name  = module.eks.cluster_name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = var.jumphost_role_arn
 
+ 
+  access_scope {
+     type = "cluster"
+      }
+  depends_on   = [aws_eks_access_entry.jumphost]
+}
+ 
+output "cluster_name" {
+  value = var.cluster_name
+}
+ 
 output "oidc_provider_arn" {
   value = module.eks.oidc_provider_arn
+}
+output "cluster_id" {
+  value = module.eks.cluster_id
+}
+output "cluster_certificate_authority_data" {
+  value = module.eks.cluster_certificate_authority_data
+}
+ 
+output "cluster_oidc_issuer_url" {
+  value = module.eks.cluster_oidc_issuer_url
+}
+ 
+output "cluster_endpoint" {
+  value = module.eks.cluster_endpoint
+}
+
+output "cluster_security_group_id" {
+  value = module.eks.cluster_security_group_id
+}
+output "node_security_group_id" {
+  description = "ID of the EKS node shared security group"
+  value       = module.eks.node_security_group_id
 }
