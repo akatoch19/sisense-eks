@@ -5,3 +5,6 @@ variable "fsx_sg_ingress_port" {
 variable "env" {
   type = string
 }
+variable "private_subnet_ids" {
+  type = list(string)
+}
