@@ -16,6 +16,7 @@ module "sg" {
   vpc_id              = module.vpc.vpc_id
   fsx_sg_ingress_port = 988
   env                 = var.env
+  private_subnet_ids = data.aws_subnets.account_private_app_subnets.ids
 }
 #########################################################
 # EKS Cluster
