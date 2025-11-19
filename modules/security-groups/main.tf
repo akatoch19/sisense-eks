@@ -25,7 +25,52 @@ resource "aws_security_group" "eks_nodes" {
 }
  
 # Security group for FSx Lustre
+# Security group for FSx Lustre
+data "aws_subnets" "private" {
+  ids = var.private_subnet_ids
+}
+
+locals {
+  private_subnet_cidrs = [for s in data.aws_subnets.private.subnets : s.cidr_block]
+}
+
 resource "aws_security_group" "fsx" {
+  name        = "${var.env}-fsx-sg"
+  vpc_id      = var.vpc_id
+  description = "Security group for FSx Lustre"
+
+  # Allow Lustre port 988 from private subnets (Option 3)
+  ingress {
+    description = "Lustre LNET from EKS private subnets"
+    from_port   = 988
+    to_port     = 988
+    protocol    = "tcp"
+    cidr_blocks = local.private_subnet_cidrs
+  }
+
+  # Allow Lustre LNET self
+  ingress {
+    description = "Lustre LNET self-communication"
+    from_port   = 988
+    to_port     = 988
+    protocol    = "tcp"
+    self        = true
+  }
+
+  # All outbound allowed
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.env}-fsx-sg"
+  }
+}
+
+/* resource "aws_security_group" "fsx" {
   name        = "${var.env}-fsx-sg"
   vpc_id      = var.vpc_id
   description = "Security group for FSx Lustre"
@@ -59,7 +104,7 @@ resource "aws_security_group" "fsx" {
   tags = {
     Name = "${var.env}-fsx-sg"
   }
-}
+} */
  
 # Outputs
 output "eks_nodes_sg_id" {
